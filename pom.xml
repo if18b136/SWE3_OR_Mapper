@@ -14,12 +14,13 @@
     </properties>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.2.16</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.21</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
