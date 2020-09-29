@@ -30,6 +30,7 @@ public class DatabaseConnection {
             this.username = Config.getInstance().getProperties().getProperty("username");
             this.password = Config.getInstance().getProperties().getProperty("password");
             this.con = DriverManager.getConnection(url, username, password);
+            DBConLogger.info("Database initialised.");
         } catch (ClassNotFoundException cnf) {
             DBConLogger.error("Database Connection Creation Failed : " + cnf.getMessage());
         }
@@ -62,6 +63,7 @@ public class DatabaseConnection {
             }
         } else if (jdbc.getConnection().isClosed()) {
             jdbc = new DatabaseConnection();
+            DBConLogger.info("New Database Connection established.");
         }
         return jdbc;
     }
