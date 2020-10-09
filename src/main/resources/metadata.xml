@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mapping>
+    <class name="Person" table="t_person">
+        <primary name="id" column="id" type="int" />
+        <attribute name="firstName" column="first_name" type="string"/>
+        <attribute name="lastName" column="last_name" type="string"/>
+        <attribute name="birthDate" column="birth_date" type="localDate"/>
+    </class>
+    <subclass name="Teacher" table="t_teacher">
+        <primary name="id" column="id" type="int" />
+        <foreign table="t_person" name="personId" column="fk_person_id" />
+        <attribute name="salary" column="salary" type="double"/>
+    </subclass>
+</mapping>

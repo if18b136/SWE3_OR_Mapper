@@ -1,0 +1,2 @@
+TODO decide on inheritance database style - single table, table per type - probably table per type
+
