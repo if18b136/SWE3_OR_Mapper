@@ -8,6 +8,7 @@ import java.util.List;
 
 public class MetaData {
 
+    //TODO - Question: is it smart to declare a class for fieldData key+value?
     public class fieldData {
         public fieldData(String type, String value) {this.type=type; this.value=value;}
         public String type;
