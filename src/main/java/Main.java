@@ -17,7 +17,7 @@ public class Main {
         try{
             DatabaseConnection db = DatabaseConnection.getInstance();   //DB Connection Test
             Manager manager = Manager.getInstance();                    // Manager Class Test
-            Person timmy = new Person(1,"Timmy","Turner", LocalDate.now());     // Person Class Test
+            Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
 
             // MetaData extraction Test
             List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);

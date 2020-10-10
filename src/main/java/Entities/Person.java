@@ -15,5 +15,15 @@ public class Person {
         this.birthDate = birthDate;
     }
 
+    public int getID() { return ID; }
+    // public void setID(int ID) { this.ID = ID; }
 
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
 }
