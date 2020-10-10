@@ -29,9 +29,8 @@ public class Main {
             // Statement creation Test
             Statement insertPerson = new Statement();
             String insertPersonString = insertPerson.insert(timmy,"t_person");
-
+            System.out.println(insertPersonString);
             String testString = StatementUtilityAlternative.insert(timmy, "t_person");
-
 
         } catch (Exception e) {
             mainLogger.error(e);

@@ -15,7 +15,7 @@ public class DatabaseConnection {
     private String username = "";
     private String password = "";
 
-
+    // TODO - DBConnection as utility class perhaps?
     /**
      * Static Singleton initialisation.
      * The DBConnection is a Singleton that does not need to be initialized again for every call.
