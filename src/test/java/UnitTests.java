@@ -61,19 +61,35 @@ public class UnitTests {
     }
 
     // DO NOT USE!!!
-//    @Test
-//    public void PreparedStatementTableCreationAndInsertTest() throws SQLException, IllegalAccessException {
-//        DatabaseConnection db = DatabaseConnection.getInstance();
-//        Statement statement = new Statement();
-//        Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));
-//        String tableInit = statement.initTable(timmy.getClass());
-//        String insertPersonString = statement.insert(timmy,"person");
-//
-//        PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists person");
-//        dropTable.execute();
-//        PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
-//        initPerson.execute();
+    @Test
+    public void PreparedStatementTableCreationAndInsertTest() throws SQLException, IllegalAccessException {
+        DatabaseConnection db = DatabaseConnection.getInstance();
+        Statement statement = new Statement();
+        Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));
+        String tableInit = statement.initTable(timmy.getClass());
+        String insertPersonString = statement.insert(timmy,"person");
+
+        PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists person");
+        dropTable.execute();
+        PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
+        initPerson.execute();
+        PreparedStatement insertTimmy = db.getConnection().prepareStatement(insertPersonString);
+        insertTimmy.execute();
+    }
+
+    @Test
+    public void PreparedStatementTableCreationAndInsertTestWithAnnotations() throws SQLException, IllegalAccessException {
+        DatabaseConnection db = DatabaseConnection.getInstance();
+        Statement statement = new Statement();
+        Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));
+        String tableInit = statement.initFromClass(timmy.getClass());
+        String insertPersonString = statement.insert(timmy,"person");
+
+        PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists t_person");
+        dropTable.execute();
+        PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
+        initPerson.execute();
 //        PreparedStatement insertTimmy = db.getConnection().prepareStatement(insertPersonString);
 //        insertTimmy.execute();
-//    }
+    }
 }

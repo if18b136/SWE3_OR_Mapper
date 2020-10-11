@@ -18,6 +18,17 @@ public class Statement {
         return initTable.toString();
     }
 
+    public String initFromClass(Class<?> tableClass) {
+        List<String> data = MetaData.getAnnotationColumnData(tableClass);
+        StringBuilder initTable = new StringBuilder();
+        initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(tableClass)).append(" (");
+        for ( String sql : data) {
+            initTable.append(sql).append(" ");
+        }
+        initTable.append(");");
+        return initTable.toString();
+    }
+
     // TODO make a check for the table name before operation
     public String insert(Object obj, String table) throws IllegalAccessException {  // TODO - exception is there because of MetaData.fieldData method - refactor if more exceptions could occur
         // extract all attributes from obj - reflection

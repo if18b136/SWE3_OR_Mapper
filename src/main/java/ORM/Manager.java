@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * The Manager class operates as a single Instance for legal checks and other operational tests

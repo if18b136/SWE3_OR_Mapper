@@ -1,5 +1,5 @@
 TODO decide on inheritance database style - single table, table per type - probably table per type
-TODO check if prepared statements would make sense.
+
 TODO refactor table creation - currently takes path to class as table name
 TODO add int primary key auto incrementation
 TODO look up annotation as metadata for classes
@@ -7,3 +7,8 @@ TODO foreign key constraints - "before saving foreign key constraint changes sav
 
 Locking - singleton class for db operations, which locks itself if a db statement is sent to it, stores other sent states into a waiting room list, which will be handled after unlocking db again.
 Big problem with this is that statement 1 could be "delete table x" and statement 2 could then be "insert into table x" - so this solution would need to check in before each waiting room statement if the statement is legal anymore.
+
+TODO QUESTION: prepared statements instead of strings?
+would need a way to transmit not only the prepared statement string but all different vars
+
+TODO QUESTION: auto increment - just set it for db and then check each time for latest entry?

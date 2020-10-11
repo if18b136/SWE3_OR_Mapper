@@ -45,10 +45,14 @@ public class Main {
             insertTimmy.execute();
 
             //Annotation Test
-            Table an = timmy.getClass().getAnnotation(Table.class);
-            System.out.println(an.name());
-            System.out.println(an);
-            System.out.println(an.annotationType());
+//            Table an = timmy.getClass().getAnnotation(Table.class);
+//            System.out.println(an.name());
+//            System.out.println(an);
+//            System.out.println(an.annotationType());
+
+            //Init Table from Annotations Test
+            String timmyInit = statement.initFromClass(timmy.getClass());
+            System.out.println(timmyInit);
         } catch (Exception e) {
             mainLogger.error(e);
         }
