@@ -1,12 +1,20 @@
 package Entities;
 
+import ORM.Annotations.Column;
+import ORM.Annotations.Table;
 import java.time.LocalDate;
 
+@Table(name = "t_person")
 public class Person {
-    private int ID;
+
+    private final int ID;   // id should not get changed as it is the primary key
+    @Column(nullable = false, length = 50)
     private String firstName;
+    @Column(nullable = false, length = 50)
     private String lastName;
+    @Column(nullable = false)
     private LocalDate birthDate;
+
 
     public Person(int ID, String firstName, String lastName, LocalDate birthDate) {
         this.ID = ID;

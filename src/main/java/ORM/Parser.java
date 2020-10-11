@@ -9,16 +9,12 @@ public final class Parser {
 
     public static String parseType(String type) {
         try {
-            switch (type) {
-                case "int":
-                    return "int";
-                case "java.lang.String":
-                    return "varchar(255)";
-                case "java.time.LocalDate":
-                    return "date";
-                default:
-                    throw new Exception("Exception while parsing type to dB type - type not recognized.");
-            }
+            return switch (type) {
+                case "int" -> "int";
+                case "java.lang.String" -> "varchar(255)";
+                case "java.time.LocalDate" -> "date";
+                default -> throw new Exception("Exception while parsing type to dB type - type not recognized.");
+            };
         } catch (Exception e) {
             parserLogger.error(e);
         }

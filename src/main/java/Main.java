@@ -1,5 +1,6 @@
 import Database.DatabaseConnection;
 import Entities.Person;
+import ORM.Annotations.Table;
 import ORM.Manager;
 import ORM.MetaData;
 import ORM.Statement;
@@ -7,6 +8,7 @@ import ORM.Statement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.annotation.Annotation;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.util.List;
@@ -42,6 +44,11 @@ public class Main {
             PreparedStatement insertTimmy = db.getConnection().prepareStatement(insertPersonString);
             insertTimmy.execute();
 
+            //Annotation Test
+            Table an = timmy.getClass().getAnnotation(Table.class);
+            System.out.println(an.name());
+            System.out.println(an);
+            System.out.println(an.annotationType());
         } catch (Exception e) {
             mainLogger.error(e);
         }
