@@ -19,7 +19,7 @@ public class Main {
         try{
             DatabaseConnection db = DatabaseConnection.getInstance();   //DB Connection Test
             Manager manager = Manager.getInstance();                    // Manager Class Test
-            Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
+            Person timmy = new Person(5,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
 
             // MetaData extraction Test
             List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);
@@ -29,7 +29,7 @@ public class Main {
 
             // Statement creation Test
             Statement statement = new Statement();
-            String insertPersonString = statement.insert(timmy,"person");
+            String insertPersonString = statement.insert(timmy,"t_person"); // TODO make the need of a table argument unnecessary
             System.out.println(insertPersonString);
 
             // Table init String creation Test
@@ -37,12 +37,17 @@ public class Main {
             System.out.println(tableInit);
 
             //DB table creation Test
-            PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists person");
+            PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
             PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
             initPerson.execute();
             PreparedStatement insertTimmy = db.getConnection().prepareStatement(insertPersonString);
             insertTimmy.execute();
+
+//            Person james = new Person(15, "test", "test",LocalDate.now());
+//            insertPersonString = statement.insert(james,"t_person");
+//            db.getConnection().prepareStatement(insertPersonString);
+//            insertTimmy.execute();
 
             //Annotation Test
 //            Table an = timmy.getClass().getAnnotation(Table.class);
@@ -52,7 +57,10 @@ public class Main {
 
             //Init Table from Annotations Test
             String timmyInit = statement.initFromClass(timmy.getClass());
+
             System.out.println(timmyInit);
+
+
         } catch (Exception e) {
             mainLogger.error(e);
         }

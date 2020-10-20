@@ -3,13 +3,16 @@ package ORM;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Type;
+
 public final class Parser {
 
     static final Logger parserLogger = LogManager.getLogger("Parser Logger");
 
-    public static String parseType(String type) {
+    public static String parseType(AnnotatedType type) {
         try {
-            return switch (type) {
+            return switch (type.toString()) {
                 case "int" -> "int";
                 case "java.lang.String" -> "varchar(255)";
                 case "java.time.LocalDate" -> "date";

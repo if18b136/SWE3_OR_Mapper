@@ -7,7 +7,7 @@ import java.time.LocalDate;
 @Table(name = "t_person")
 public class Person {
     @Column(primary = true,autoIncrement = true)
-    private final int ID;   // id should not get changed as it is the primary key
+    private final int id;   // id should not get changed as it is the primary key
     @Column(nullable = false, length = 50)
     private String firstName;
     @Column(nullable = false, length = 50)
@@ -16,13 +16,13 @@ public class Person {
     private LocalDate birthDate;
 
     public Person(int ID, String firstName, String lastName, LocalDate birthDate) {
-        this.ID = ID;
+        this.id = ID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
     }
 
-    public int getID() { return ID; }
+    public int getId() { return id; }
     // public void setID(int ID) { this.ID = ID; }
 
     public String getFirstName() { return firstName; }

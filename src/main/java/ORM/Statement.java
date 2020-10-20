@@ -1,5 +1,7 @@
 package ORM;
 
+import ORM.Annotations.Table;
+
 import java.util.List;
 
 /**
@@ -10,7 +12,7 @@ public class Statement {
     public String initTable(Class<?> tableClass) {
         List<MetaData.fieldData> fields = MetaData.classMetaData(tableClass);
         StringBuilder initTable = new StringBuilder();
-        initTable.append("CREATE TABLE ").append(tableClass.getName().split("\\.")[1]).append(" ( ");   // TODO clean up class name extraction
+        initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(tableClass)).append(" ( ");   // TODO clean up class name extraction
         for(MetaData.fieldData field : fields) {
             initTable.append(field.name).append(" ").append(Parser.parseType(field.type)).append(", ");
         }

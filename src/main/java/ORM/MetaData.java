@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ public final class MetaData {
 
     //TODO - Question: is it smart to declare a class for fieldData key+value?
     public static class fieldData {
-        public fieldData(String type, String name, String value) {this.type=type; this.name=name; this.value=value;}
-        public fieldData(String type, String name) {this.type=type; this.name=name;}
-        public String type;
+        public fieldData(AnnotatedType type, String name, String value) {this.type=type; this.name=name; this.value=value;}
+        public fieldData(AnnotatedType type, String name) {this.type=type; this.name=name;}
+        public AnnotatedType type;
         public String name;
         public String value;
     }
@@ -75,7 +76,7 @@ public final class MetaData {
         List<fieldData> fieldList = new ArrayList<>();           // list from helper class
         for(Field field : fieldArray) {
             field.setAccessible(true);
-            fieldList.add(new fieldData(field.getAnnotatedType().toString(), field.getName()));
+            fieldList.add(new fieldData(field.getAnnotatedType(), field.getName()));
         }
         return fieldList;
     }
@@ -85,7 +86,7 @@ public final class MetaData {
         List<fieldData> fieldList = new ArrayList<>();           // list from helper class
         for(Field field : fieldArray) {
             field.setAccessible(true);
-            fieldList.add(new fieldData(field.getAnnotatedType().toString(), field.getName(), field.get(obj).toString()));
+            fieldList.add(new fieldData(field.getAnnotatedType(), field.getName(), field.get(obj).toString()));
         }
         return fieldList;
     }
