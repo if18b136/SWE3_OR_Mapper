@@ -1,6 +1,8 @@
 package ORM;
 
 import ORM.Annotations.Table;
+import ORM.Base.Entity;
+import ORM.Base.Field;
 
 import java.util.List;
 
@@ -31,6 +33,7 @@ public class Statement {
         return initTable.toString();
     }
 
+    // Old version - new version below uses Entities of the test class objects
     // TODO make a check for the table name before operation
     public String insert(Object obj, String table) throws IllegalAccessException {  // TODO - exception is there because of MetaData.fieldData method - refactor if more exceptions could occur
         // extract all attributes from obj - reflection
@@ -54,6 +57,43 @@ public class Statement {
                 values.append(", ");
             }
         }
+        insertStatement.append(names.toString()).append(values.toString()).append(";");
+        return insertStatement.toString();
+    }
+
+    public String insert(Entity entity) {
+        Field[] fields = entity.getFields();
+        // if fields has primary field:
+        int i = Utility.hasPK(fields).size() > 0 ? 1 : 0;
+
+        StringBuilder insertStatement = new StringBuilder();
+        insertStatement.append("INSERT into ").append(entity.getTableName()).append(" ");
+        StringBuilder names = new StringBuilder();
+        StringBuilder values = new StringBuilder();
+        names.append("(");
+        values.append(" VALUES (");
+        if(i == 0) {
+            for( ; i < (fields.length-1) ; i++) {
+                names.append(fields[i].getColumnName()).append(", ");
+                values.append("\"").append(fields[i].getValue()).append("\"").append(", ");
+            }
+            // last one needs extra append
+            names.append(fields[fields.length-1].getColumnName()).append(") ");
+            values.append("\"").append(fields[fields.length-1].getValue()).append("\"").append(")");
+        } else {
+            for( int j : Utility.noPKFields(fields)) {
+                names.append(fields[j].getColumnName());
+                values.append("\"").append(fields[j].getValue()).append("\"");
+                if(fields[j].equals(fields[fields.length-1])) { // if the last field is an AI field, we need to append different
+                    names.append(") ");
+                    values.append(")");
+                } else {
+                    names.append(", ");
+                    values.append(", ");
+                }
+            }
+        }
+
         insertStatement.append(names.toString()).append(values.toString()).append(";");
         return insertStatement.toString();
     }

@@ -71,6 +71,26 @@ public final class MetaData {
         return null;    // not reachable - method either returns String or throws an Exception
     }
 
+    public static boolean isPrimary(Field field) {
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if(annotation instanceof Column && ((Column) annotation).primary()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isAutoIncrement(Field field) {
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if(annotation instanceof Column && ((Column) annotation).autoIncrement()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static List<fieldData> classMetaData (Class<?> c) {
         Field[] fieldArray = c.getDeclaredFields(); //get all fields as single Array
         List<fieldData> fieldList = new ArrayList<>();           // list from helper class

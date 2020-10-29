@@ -1,6 +1,9 @@
 import Database.DatabaseConnection;
 import Entities.Person;
+import Entities.PersonNoAI;
 import ORM.Annotations.Table;
+import ORM.Base.Entity;
+import ORM.Base.Field;
 import ORM.Manager;
 import ORM.MetaData;
 import ORM.Statement;
@@ -20,20 +23,22 @@ public class Main {
             DatabaseConnection db = DatabaseConnection.getInstance();   //DB Connection Test
             Manager manager = Manager.getInstance();                    // Manager Class Test
             Person timmy = new Person(5,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
+            PersonNoAI test = new PersonNoAI(5,"Timmy","Turner", LocalDate.of(1992,5,21));
 
-            // MetaData extraction Test
-            List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);
-            for( MetaData.fieldData field : timmyObject) {
-                System.out.println(field.type + " - " + field.value);
+            // get an Entity object from Timmy
+            Entity timmyEnt = new Entity(timmy);
+            System.out.println("Timmy's class type: " + timmyEnt.getEntityClass().toString());
+            System.out.println("Table Name: " + timmyEnt.getTableName());
+            Field[] timmyFields = timmyEnt.getFields();
+            for(Field field : timmyFields) {
+                System.out.println("Value: " + field.getValue() + " - Type: " + field.getFieldType());
             }
 
-            // Statement creation Test
-            Statement statement = new Statement();
-            String insertPersonString = statement.insert(timmy,"t_person"); // TODO make the need of a table argument unnecessary
-            System.out.println(insertPersonString);
-
+            Statement stmt = new Statement();
+            String insert = stmt.insert(timmyEnt);
+            System.out.println(insert);
             // Table init String creation Test
-            String tableInit = statement.initTable(timmy.getClass());
+            String tableInit = stmt.initTable(timmy.getClass());
             System.out.println(tableInit);
 
             //DB table creation Test
@@ -41,8 +46,18 @@ public class Main {
             dropTable.execute();
             PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
             initPerson.execute();
-            PreparedStatement insertTimmy = db.getConnection().prepareStatement(insertPersonString);
+            PreparedStatement insertTimmy = db.getConnection().prepareStatement(insert);
             insertTimmy.execute();
+
+            insert = stmt.insert(new Entity(test));
+            System.out.println(insert);
+
+//            // MetaData extraction Test
+//            List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);
+//            for( MetaData.fieldData field : timmyObject) {
+//                System.out.println(field.type + " - " + field.value);
+//            }
+//
 
 //            Person james = new Person(15, "test", "test",LocalDate.now());
 //            insertPersonString = statement.insert(james,"t_person");
@@ -54,11 +69,11 @@ public class Main {
 //            System.out.println(an.name());
 //            System.out.println(an);
 //            System.out.println(an.annotationType());
-
-            //Init Table from Annotations Test
-            String timmyInit = statement.initFromClass(timmy.getClass());
-
-            System.out.println(timmyInit);
+//
+//            //Init Table from Annotations Test
+//            String timmyInit = statement.initFromClass(timmy.getClass());
+//
+//            System.out.println(timmyInit);
 
 
         } catch (Exception e) {
