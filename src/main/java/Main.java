@@ -38,14 +38,14 @@ public class Main {
             String insert = stmt.insert(timmyEnt);
             System.out.println(insert);
             // Table init String creation Test
-            String tableInit = stmt.initTable(timmy.getClass());
+            String tableInit = stmt.initFromClass(timmy.getClass());
             System.out.println(tableInit);
 
             //DB table creation Test
-            PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists t_person");
-            dropTable.execute();
-            PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
-            initPerson.execute();
+//            PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists t_person");
+//            dropTable.execute();
+//            PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
+//            initPerson.execute();
             PreparedStatement insertTimmy = db.getConnection().prepareStatement(insert);
             insertTimmy.execute();
 
