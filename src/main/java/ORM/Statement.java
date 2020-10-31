@@ -1,17 +1,23 @@
 package ORM;
 
+import Database.DatabaseConnection;
 import ORM.Annotations.Table;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
  *
  */
-public class Statement {
+public final class Statement {
+    static final Logger statementLogger = LogManager.getLogger("Statement Logger");
+    private Statement() {}
 
-    public String initTable(Class<?> tableClass) {
+    public static String initTable(Class<?> tableClass) {
         List<MetaData.fieldData> fields = MetaData.classMetaData(tableClass);
         StringBuilder initTable = new StringBuilder();
         initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(tableClass)).append(" ( ");   // TODO clean up class name extraction
@@ -22,7 +28,7 @@ public class Statement {
         return initTable.toString();
     }
 
-    public String initFromClass(Class<?> tableClass) {
+    public static String initFromClass(Class<?> tableClass) {
         List<String> data = MetaData.getAnnotationColumnData(tableClass);
         StringBuilder initTable = new StringBuilder();
         initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(tableClass)).append(" (");
@@ -33,35 +39,35 @@ public class Statement {
         return initTable.toString();
     }
 
-    // Old version - new version below uses Entities of the test class objects
-    // TODO make a check for the table name before operation
-    public String insert(Object obj, String table) throws IllegalAccessException {  // TODO - exception is there because of MetaData.fieldData method - refactor if more exceptions could occur
-        // extract all attributes from obj - reflection
-        //INSERT into $table ($att1,$att2,...) VALUES ($val1,$val2,...);
-        StringBuilder insertStatement = new StringBuilder();
-        insertStatement.append("INSERT into ").append(table).append(" ");
-        StringBuilder names = new StringBuilder();
-        StringBuilder values = new StringBuilder();
-        names.append("(");
-        values.append(" VALUES (");
+// Old version - new version below uses Entities of the test class objects
+//    // TODO make a check for the table name before operation
+//    public String insert(Object obj, String table) throws IllegalAccessException {  // TODO - exception is there because of MetaData.fieldData method - refactor if more exceptions could occur
+//        // extract all attributes from obj - reflection
+//        //INSERT into $table ($att1,$att2,...) VALUES ($val1,$val2,...);
+//        StringBuilder insertStatement = new StringBuilder();
+//        insertStatement.append("INSERT into ").append(table).append(" ");
+//        StringBuilder names = new StringBuilder();
+//        StringBuilder values = new StringBuilder();
+//        names.append("(");
+//        values.append(" VALUES (");
+//
+//        List<MetaData.fieldData> fields = MetaData.objectMetaData(obj);
+//        for( MetaData.fieldData field : fields) {     // TODO refactor so that no if needed? last value after loop
+//            names.append(field.name);
+//            values.append("\"").append(field.value).append("\"");       // TODO  alternative to ugly quotation for values in statement
+//            if (field.equals(fields.get(fields.size() - 1))) {  // bad solution code-wise
+//                names.append(") ");
+//                values.append(")");
+//            } else {
+//                names.append(", ");
+//                values.append(", ");
+//            }
+//        }
+//        insertStatement.append(names.toString()).append(values.toString()).append(";");
+//        return insertStatement.toString();
+//    }
 
-        List<MetaData.fieldData> fields = MetaData.objectMetaData(obj);
-        for( MetaData.fieldData field : fields) {     // TODO refactor so that no if needed? last value after loop
-            names.append(field.name);
-            values.append("\"").append(field.value).append("\"");       // TODO  alternative to ugly quotation for values in statement
-            if (field.equals(fields.get(fields.size() - 1))) {  // bad solution code-wise
-                names.append(") ");
-                values.append(")");
-            } else {
-                names.append(", ");
-                values.append(", ");
-            }
-        }
-        insertStatement.append(names.toString()).append(values.toString()).append(";");
-        return insertStatement.toString();
-    }
-
-    public String insert(Entity entity) {
+    public static String insert(Entity entity) {
         Field[] fields = entity.getFields();
         // if fields has primary field:
         int i = Utility.hasPK(fields).size() > 0 ? 1 : 0;
@@ -96,5 +102,12 @@ public class Statement {
 
         insertStatement.append(names.toString()).append(values.toString()).append(";");
         return insertStatement.toString();
+    }
+
+    // temp helper function to get id for freshly created sql entries
+    public static Entity updateID(Entity entity) throws SQLException {
+        DatabaseConnection db = DatabaseConnection.getInstance();
+
+        return null;
     }
 }

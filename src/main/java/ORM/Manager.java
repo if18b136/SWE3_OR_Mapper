@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -13,8 +14,9 @@ import java.util.Map;
 public class Manager {
     final static Logger managerLogger = LogManager.getLogger("Manager");
     private static Manager manager;
+;
 
-    public Manager() {
+    private Manager() {
     }
 
     public static Manager getInstance() {
@@ -28,6 +30,5 @@ public class Manager {
         }
         return manager;
     }
-
 
 }

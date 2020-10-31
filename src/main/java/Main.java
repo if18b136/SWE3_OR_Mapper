@@ -12,7 +12,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,9 +22,9 @@ public class Main {
     static final Logger mainLogger = LogManager.getLogger("Main Logger");
     public static void main(String[] args) {
         try{
-            DatabaseConnection db = DatabaseConnection.getInstance();   //DB Connection Test
+            Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
             Manager manager = Manager.getInstance();                    // Manager Class Test
-            Person timmy = new Person(5,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
+            Person timmy = new Person("Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             PersonNoAI test = new PersonNoAI(5,"Timmy","Turner", LocalDate.of(1992,5,21));
 
             // get an Entity object from Timmy
@@ -34,23 +36,28 @@ public class Main {
                 System.out.println("Value: " + field.getValue() + " - Type: " + field.getFieldType());
             }
 
-            Statement stmt = new Statement();
-            String insert = stmt.insert(timmyEnt);
+
+            String insert = Statement.insert(timmyEnt);
             System.out.println(insert);
             // Table init String creation Test
-            String tableInit = stmt.initFromClass(timmy.getClass());
+            String tableInit = Statement.initFromClass(timmy.getClass());
             System.out.println(tableInit);
 
             //DB table creation Test
-//            PreparedStatement dropTable = db.getConnection().prepareStatement("DROP TABLE if exists t_person");
+//            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
 //            dropTable.execute();
-//            PreparedStatement initPerson = db.getConnection().prepareStatement(tableInit);
+//            PreparedStatement initPerson = db.prepareStatement(tableInit);
 //            initPerson.execute();
-            PreparedStatement insertTimmy = db.getConnection().prepareStatement(insert);
-            insertTimmy.execute();
+            PreparedStatement insertTimmy = db.prepareStatement(insert, java.sql.Statement.RETURN_GENERATED_KEYS);
+            insertTimmy.executeUpdate();
+            ResultSet resultSet = insertTimmy.getGeneratedKeys();
+            while(resultSet.next())
+                System.out.println("Key: " + resultSet.getInt(1));
 
-            insert = stmt.insert(new Entity(test));
-            System.out.println(insert);
+
+//            insert = stmt.insert(new Entity(test));
+//            insertTimmy = db.getConnection().prepareStatement(insert);
+//            insertTimmy.execute();
 
 //            // MetaData extraction Test
 //            List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);

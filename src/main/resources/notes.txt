@@ -22,3 +22,5 @@ public list vs public Array: public list means that a user could adapt the list 
 TODO handle more than one field as primary key
 
 TODO fetch pk after auto increment
+
+auto increment can be "upgraded" manually by inserting a higher number - skips the numbers between
