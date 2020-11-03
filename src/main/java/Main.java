@@ -60,12 +60,19 @@ public class Main {
             selectQuery.addTables(timmyEnt.getTableName());
             String select = selectQuery.buildQuery();
 
-
-            Person selectedTimmy = Manager.execute(Person.class, select);
+            Person selectedTimmy = Manager.executeSelect(Person.class, select);
             System.out.println(selectedTimmy.getFirstName());
             System.out.println("Timmy's ID: " + selectedTimmy.getId());
 
-
+            //TODO Frage: is it really necessary to be able to select-call a certain coulumn if I can call the complete entry and put it into an object?
+            SelectQuery selectVorname = new SelectQuery();
+            selectVorname.addTargets("firstName");
+            selectVorname.addTables(timmyEnt.getTableName());
+            selectVorname.addCondition("id", 1);
+            select = selectVorname.buildQuery();
+            System.out.println(select);
+            String TimmysVorname = Manager.executeSelect(String.class, select);
+            System.out.println("Timmy's Vorname = " + TimmysVorname);
 
 //            insert = stmt.insert(new Entity(test));
 //            insertTimmy = db.getConnection().prepareStatement(insert);

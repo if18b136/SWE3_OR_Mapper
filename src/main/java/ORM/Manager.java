@@ -77,16 +77,21 @@ public final class Manager {
     }
 
 
-    //
-    public static <T> T execute(Class<T> type, String query) {
+    // TODO currently only useful for single entries
+    public static <T> T executeSelect(Class<T> type, String query) {
         try{
             java.sql.Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
             ResultSet res = stmt.executeQuery(query);
+
             if(res.next()){
-                System.out.println(res.getInt(1));
                 //T t = type.newInstance();     // deprecated
                 T t = type.getDeclaredConstructor().newInstance();
-                loadIntoObject(res,t);
+//                if(t.getClass().equals(String.class)) {     //TODO delete this bad code and replace with something that makes sense.
+//                    System.out.println("String needs separate handling.");
+//                    t = (T) res.getString(1);
+//                } else {
+                    loadIntoObject(res,t);
+//                }
                 return t;
             }
 
@@ -101,24 +106,45 @@ public final class Manager {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException {
+    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException, NoSuchFieldException {
         Class<?> objectClass = object.getClass();
-        for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
-            field.setAccessible(true);
-            Object value = res.getObject(field.getName());
-            System.out.println("Class: " + value.getClass() + "Value: " + value);
-            Class<?> type = field.getType();
-            if(type.isPrimitive()) {    //TODO check if own class does the same
-                Class<?> boxed = boxPrimitiveClass(type);
-                value = boxed.cast(value);
-            } else if(value.getClass() == Date.class) {  // TODO convert externally?
-                value = ((Date) value).toLocalDate();
+
+        if(!objectClass.isPrimitive() && !objectClass.equals(String.class)) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
+            for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                Object value = res.getObject(field.getName());
+                Class<?> type = field.getType();
+                if(type.isPrimitive()) {    //TODO check if own class does the same
+                    Class<?> boxed = boxPrimitiveClass(type);
+                    value = boxed.cast(value);
+                } else if(value.getClass() == Date.class) {  // TODO convert externally?
+                    value = ((Date) value).toLocalDate();
+                }
+                field.set(object, value);
             }
-            field.set(object, value);
+        } else {
+            // This is the way to get to more than one columns, currently not needed
+            for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
+                //System.out.println("    " + res.getMetaData().getColumnName(i));
+                //java.lang.reflect.Field field = objectClass.getField(res.getMetaData().getColumnName(i));
+                for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    System.out.println("    " + field.getName());
+                }
+                java.lang.reflect.Field field = objectClass.getField("value");
+                field.setAccessible(true);
+                System.out.println("        " + field.getName());
+
+//                field.setAccessible(true);
+//                Object value = res.getObject(objectClass.getName());
+//                field.set(object,value);
+            }
         }
     }
 
