@@ -23,7 +23,6 @@ public class Main {
     public static void main(String[] args) {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
-            Manager manager = Manager.getInstance();                    // Manager Class Test
             Person timmy = new Person("Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             PersonNoAI test = new PersonNoAI(5,"Timmy","Turner", LocalDate.of(1992,5,21));
 
@@ -53,6 +52,12 @@ public class Main {
             ResultSet resultSet = insertTimmy.getGeneratedKeys();
             while(resultSet.next())
                 System.out.println("Key: " + resultSet.getInt(1));
+
+
+
+
+
+
 
 
 //            insert = stmt.insert(new Entity(test));
