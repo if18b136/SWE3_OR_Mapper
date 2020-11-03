@@ -6,6 +6,7 @@ import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Manager;
 import ORM.MetaData;
+import ORM.Queries.SelectQuery;
 import ORM.Statement;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,10 +44,10 @@ public class Main {
             System.out.println(tableInit);
 
             //DB table creation Test
-//            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
-//            dropTable.execute();
-//            PreparedStatement initPerson = db.prepareStatement(tableInit);
-//            initPerson.execute();
+            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
+            dropTable.execute();
+            PreparedStatement initPerson = db.prepareStatement(tableInit);
+            initPerson.execute();
             PreparedStatement insertTimmy = db.prepareStatement(insert, java.sql.Statement.RETURN_GENERATED_KEYS);
             insertTimmy.executeUpdate();
             ResultSet resultSet = insertTimmy.getGeneratedKeys();
@@ -54,9 +55,15 @@ public class Main {
                 System.out.println("Key: " + resultSet.getInt(1));
 
 
+            SelectQuery selectQuery = new SelectQuery();
+            selectQuery.addCondition("id",1);
+            selectQuery.addTables(timmyEnt.getTableName());
+            String select = selectQuery.buildQuery();
 
 
-
+            Person selectedTimmy = Manager.execute(Person.class, select);
+            System.out.println(selectedTimmy.getFirstName());
+            System.out.println("Timmy's ID: " + selectedTimmy.getId());
 
 
 

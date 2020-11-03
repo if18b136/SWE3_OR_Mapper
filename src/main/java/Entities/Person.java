@@ -29,6 +29,8 @@ public class Person {
         this.birthDate = birthDate;
     }
 
+    public Person() {}
+
     public int getId() { return id; }
     public void setID(int id) { this.id = id; }
 

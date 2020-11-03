@@ -11,7 +11,6 @@ public class SelectQuery implements Query{
     Map<String,String> conditions = new LinkedHashMap<>();
     String query;
 
-
     @Override
     public void addTargets(String... targets) {
         this.targets.addAll(Arrays.asList(targets));
@@ -33,14 +32,14 @@ public class SelectQuery implements Query{
     public String buildQuery() {
         try{
             StringBuilder selectQuery = new StringBuilder();
-            selectQuery.append(operation).append(space);    // "SELECT" + " "
+            selectQuery.append(operation).append(space);                // "SELECT" + " "
             if (this.targets.isEmpty()) {
-                selectQuery.append(all).append(space);  // "*" + " "
+                selectQuery.append(all).append(space);                  // "*" + " "
             } else {
                 if(this.targets.size() == 1) {
                     selectQuery.append(targets.get(0)).append(space);   // "targetColumn" + " "
                 } else {
-                    for (int i=0;i<targets.size()-1;i++) {    // "targetColumn" + "," + ...  "targetColumn" + ","
+                    for (int i=0;i<targets.size()-1;i++) {              // "targetColumn" + "," + ...  "targetColumn" + ","
                         selectQuery.append(targets.get(i)).append(comma);
                     }
                     selectQuery.append(targets.get(targets.size()-1)).append(space);    // last "targetColumn" + " "

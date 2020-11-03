@@ -1,15 +1,20 @@
 package ORM;
 
 import Database.DatabaseConnection;
+import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Manager class operates as a single Instance for legal checks and other operational tests
@@ -69,6 +74,87 @@ public final class Manager {
         table.setString(1,tableName);
         ResultSet res = table.executeQuery();
         return res.next();
+    }
+
+
+    //
+    public static <T> T execute(Class<T> type, String query) {
+        try{
+            java.sql.Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
+            ResultSet res = stmt.executeQuery(query);
+            if(res.next()){
+                System.out.println(res.getInt(1));
+                //T t = type.newInstance();     // deprecated
+                T t = type.getDeclaredConstructor().newInstance();
+                loadIntoObject(res,t);
+                return t;
+            }
+
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        } catch (IllegalAccessException iae) {
+            iae.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException {
+        Class<?> objectClass = object.getClass();
+        for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
+            field.setAccessible(true);
+            Object value = res.getObject(field.getName());
+            System.out.println("Class: " + value.getClass() + "Value: " + value);
+            Class<?> type = field.getType();
+            if(type.isPrimitive()) {    //TODO check if own class does the same
+                Class<?> boxed = boxPrimitiveClass(type);
+                value = boxed.cast(value);
+            } else if(value.getClass() == Date.class) {  // TODO convert externally?
+                value = ((Date) value).toLocalDate();
+            }
+            field.set(object, value);
+        }
+    }
+
+    private static boolean isPrimitive(Class<?> type) {
+        return (type == int.class ||
+                type == long.class ||
+                type == double.class ||
+                type == float.class ||
+                type == boolean.class ||
+                type == byte.class ||
+                type == char.class ||
+                type == short.class);
+    }
+
+    //TODO check advantage of using boxed java classes
+    private static Class<?> boxPrimitiveClass(Class<?> type) {
+        if (int.class.equals(type)) {
+            return Integer.class;
+        } else if (long.class.equals(type)) {
+            return Long.class;
+        } else if (double.class.equals(type)) {
+            return Double.class;
+        } else if (float.class.equals(type)) {
+            return Float.class;
+        } else if (boolean.class.equals(type)) {
+            return Boolean.class;
+        } else if (byte.class.equals(type)) {
+            return Byte.class;
+        } else if (char.class.equals(type)) {
+            return Character.class;
+        } else if (short.class.equals(type)) {
+            return Short.class;
+        } else {
+            String iae = "Class " + type.getName() + "is not primitive.";
+            throw new IllegalArgumentException(iae);
+        }
     }
 
 }
