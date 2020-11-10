@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public final class Manager {
     final static Logger managerLogger = LogManager.getLogger("Manager");
     private static Connection db;
 
+    // shortens db call
     static {
         try {
             db = DatabaseConnection.getInstance().getConnection();
@@ -30,6 +32,8 @@ public final class Manager {
             managerLogger.error(sql);
         }
     }
+
+    private static HashMap<Class<?>, Entity> Entities = new HashMap<>();
 
     private Manager() {}
 
@@ -65,8 +69,18 @@ public final class Manager {
         }
         select.setInt(3,id);
 
-
         return null;
+   }
+
+   // this queries an entity of the object class for further use
+   public static Entity getEntity(Object obj) {
+        Class<?> clazz = obj.getClass();
+        if(Entities.containsKey(clazz)) {
+            return Entities.get(clazz);
+        }
+        Entity ent = new Entity(clazz);
+        Entities.put(clazz,ent);
+        return ent;
    }
 
     private static boolean doesTableExist(String tableName) throws SQLException {
@@ -85,14 +99,15 @@ public final class Manager {
 
             if(res.next()){
                 //T t = type.newInstance();     // deprecated
-                T t = type.getDeclaredConstructor().newInstance();
+                //T t = type.getDeclaredConstructor().newInstance();    //needed for loadIntoObject(resultQuery,Object)
 //                if(t.getClass().equals(String.class)) {     //TODO delete this bad code and replace with something that makes sense.
 //                    System.out.println("String needs separate handling.");
 //                    t = (T) res.getString(1);
 //                } else {
-                    loadIntoObject(res,t);
+                    //loadIntoObject(res,t); // why not with return value to write to t?
+                T newT = createObject(res,type);
 //                }
-                return t;
+                return newT;
             }
 
 
@@ -126,6 +141,7 @@ public final class Manager {
                 } else if(value.getClass() == Date.class) {  // TODO convert externally?
                     value = ((Date) value).toLocalDate();
                 }
+                System.out.println("--- loadIntoObject: " + value.toString());
                 field.set(object, value);
             }
         } else {
@@ -144,6 +160,36 @@ public final class Manager {
 //                field.setAccessible(true);
 //                Object value = res.getObject(objectClass.getName());
 //                field.set(object,value);
+            }
+        }
+    }
+
+    private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+        if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
+            T t = type.getDeclaredConstructor().newInstance();
+            System.out.println(res.getMetaData().getColumnCount());
+            for(java.lang.reflect.Field field : type.getDeclaredFields()) {
+                field.setAccessible(true);
+                Object value = res.getObject(field.getName());
+                Class<?> clazz = field.getType();
+                if(clazz.isPrimitive()) {    //TODO check if own class does the same
+                    Class<?> boxed = boxPrimitiveClass(clazz);
+                    value = boxed.cast(value);
+                } else if(value.getClass() == Date.class) {  // TODO convert externally?
+                    value = ((Date) value).toLocalDate();
+                }
+                field.set(t, value);
+            }
+            return t;
+        } else {
+            //TODO handle something like "select 2 strings" here -> would need an array or list as return.
+            if(res.getMetaData().getColumnCount() > 1) {
+                for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
+                    // do something multiple times here.
+                }
+                return null;
+            } else {
+                return (T) res.getObject(1);
             }
         }
     }

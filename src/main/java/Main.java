@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
@@ -27,7 +28,10 @@ public class Main {
             Person timmy = new Person("Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             PersonNoAI test = new PersonNoAI(5,"Timmy","Turner", LocalDate.of(1992,5,21));
 
-            // get an Entity object from Timmy
+            // get an Entity object from Timmy - does not contain any info from timmy
+            Entity emptyEnt = Manager.getEntity(timmy);
+
+            // create a new Entity with info from Timmy object
             Entity timmyEnt = new Entity(timmy);
             System.out.println("Timmy's class type: " + timmyEnt.getEntityClass().toString());
             System.out.println("Table Name: " + timmyEnt.getTableName());
@@ -64,15 +68,14 @@ public class Main {
             System.out.println(selectedTimmy.getFirstName());
             System.out.println("Timmy's ID: " + selectedTimmy.getId());
 
-            //TODO Frage: is it really necessary to be able to select-call a certain coulumn if I can call the complete entry and put it into an object?
             SelectQuery selectVorname = new SelectQuery();
-            selectVorname.addTargets("firstName");
+            selectVorname.addTargets("birthdate");
             selectVorname.addTables(timmyEnt.getTableName());
             selectVorname.addCondition("id", 1);
             select = selectVorname.buildQuery();
             System.out.println(select);
-            String TimmysVorname = Manager.executeSelect(String.class, select);
-            System.out.println("Timmy's Vorname = " + TimmysVorname);
+            Date TimmysVorname = Manager.executeSelect(Date.class, select); //
+            System.out.println("Timmy's Geburtstag = " + TimmysVorname);
 
 //            insert = stmt.insert(new Entity(test));
 //            insertTimmy = db.getConnection().prepareStatement(insert);
@@ -101,9 +104,13 @@ public class Main {
 //
 //            System.out.println(timmyInit);
 
-
+        // quick error message comparison - all 3 will be printed if eg. db is not reachable
         } catch (Exception e) {
+            mainLogger.error(e.getCause());
+            System.out.println("-------------------------------------------------");
             mainLogger.error(e);
+            System.out.println("-------------------------------------------------");
+            mainLogger.error(e.getMessage());
         }
     }
 }
