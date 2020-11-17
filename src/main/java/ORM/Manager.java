@@ -34,6 +34,7 @@ public final class Manager {
     }
 
     private static HashMap<Class<?>, Entity> Entities = new HashMap<>();
+    private static List<Object> objectCache = new ArrayList<>();
 
     private Manager() {}
 
@@ -83,6 +84,11 @@ public final class Manager {
         return ent;
    }
 
+   //TODO: write getCachedObject method
+    public static Object getCachedObject(Class<?> type, ResultSet res){
+        return null;
+    }
+
     private static boolean doesTableExist(String tableName) throws SQLException {
         PreparedStatement table = db.prepareStatement("show tables like ?;");
         table.setString(1,tableName);
@@ -109,8 +115,6 @@ public final class Manager {
 //                }
                 return newT;
             }
-
-
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         } catch (IllegalAccessException iae) {
@@ -121,50 +125,48 @@ public final class Manager {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException, NoSuchFieldException {
-        Class<?> objectClass = object.getClass();
-
-        if(!objectClass.isPrimitive() && !objectClass.equals(String.class)) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
-            for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = res.getObject(field.getName());
-                Class<?> type = field.getType();
-                if(type.isPrimitive()) {    //TODO check if own class does the same
-                    Class<?> boxed = boxPrimitiveClass(type);
-                    value = boxed.cast(value);
-                } else if(value.getClass() == Date.class) {  // TODO convert externally?
-                    value = ((Date) value).toLocalDate();
-                }
-                System.out.println("--- loadIntoObject: " + value.toString());
-                field.set(object, value);
-            }
-        } else {
-            // This is the way to get to more than one columns, currently not needed
-            for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
-                //System.out.println("    " + res.getMetaData().getColumnName(i));
-                //java.lang.reflect.Field field = objectClass.getField(res.getMetaData().getColumnName(i));
-                for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
-                    field.setAccessible(true);
-                    System.out.println("    " + field.getName());
-                }
-                java.lang.reflect.Field field = objectClass.getField("value");
-                field.setAccessible(true);
-                System.out.println("        " + field.getName());
-
+//    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException, NoSuchFieldException {
+//        Class<?> objectClass = object.getClass();
+//
+//        if(!objectClass.isPrimitive() && !objectClass.equals(String.class)) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
+//            for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
 //                field.setAccessible(true);
-//                Object value = res.getObject(objectClass.getName());
-//                field.set(object,value);
-            }
-        }
-    }
+//                Object value = res.getObject(field.getName());
+//                Class<?> type = field.getType();
+//                if(type.isPrimitive()) {    //TODO check if own class does the same
+//                    Class<?> boxed = boxPrimitiveClass(type);
+//                    value = boxed.cast(value);
+//                } else if(value.getClass() == Date.class) {  // TODO convert externally?
+//                    value = ((Date) value).toLocalDate();
+//                }
+//                System.out.println("--- loadIntoObject: " + value.toString());
+//                field.set(object, value);
+//            }
+//        } else {
+//            // This is the way to get to more than one columns, currently not needed
+//            for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
+//                //System.out.println("    " + res.getMetaData().getColumnName(i));
+//                //java.lang.reflect.Field field = objectClass.getField(res.getMetaData().getColumnName(i));
+//                for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
+//                    field.setAccessible(true);
+//                    System.out.println("    " + field.getName());
+//                }
+//                java.lang.reflect.Field field = objectClass.getField("value");
+//                field.setAccessible(true);
+//                System.out.println("        " + field.getName());
+//
+////                field.setAccessible(true);
+////                Object value = res.getObject(objectClass.getName());
+////                field.set(object,value);
+//            }
+//        }
+//    }
 
-    private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchFieldException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
             T t = type.getDeclaredConstructor().newInstance();
             System.out.println(res.getMetaData().getColumnCount());

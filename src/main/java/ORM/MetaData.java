@@ -1,6 +1,7 @@
 package ORM;
 
 import ORM.Annotations.Column;
+import ORM.Annotations.ForeignKey;
 import ORM.Annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,6 +91,17 @@ public final class MetaData {
         }
         return false;
     }
+
+    public static boolean isForeign(Field field) {
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if(annotation instanceof ForeignKey) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public static List<fieldData> classMetaData (Class<?> c) {
         Field[] fieldArray = c.getDeclaredFields(); //get all fields as single Array

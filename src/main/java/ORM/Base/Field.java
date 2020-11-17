@@ -14,7 +14,7 @@ public class Field {
     private String columnName;
     private boolean primary;
     private boolean autoIncrement;
-
+    private boolean foreign;
 
     public Field(Entity entity, java.lang.reflect.Field field) {
         this.entity = entity;
@@ -23,6 +23,7 @@ public class Field {
         this.columnName = field.getName();
         this.primary = MetaData.isPrimary(field);
         this.autoIncrement = MetaData.isAutoIncrement(field);
+        this.foreign = MetaData.isForeign(field);
     }
 
     public Entity getEntity() { return entity; }
@@ -43,4 +44,5 @@ public class Field {
 
     public boolean isPrimary() { return this.primary; }
     public boolean isAutoIncrement() { return this.autoIncrement; }
+    public boolean isForeign() { return this.foreign; }
 }

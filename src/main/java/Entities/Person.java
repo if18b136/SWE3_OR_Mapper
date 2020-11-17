@@ -4,7 +4,7 @@ import ORM.Annotations.Column;
 import ORM.Annotations.Table;
 import java.time.LocalDate;
 
-@Table(name = "t_person")
+@Table(name = "t_person", subclasses = {"t_student","t_teacher"})
 public class Person {
     @Column(primary = true,autoIncrement = true)
     private int id;   // id should not get changed as it is the primary key - but if we want to enable autoIncrement, we need to change it after initialization
