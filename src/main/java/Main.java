@@ -1,6 +1,7 @@
 import Database.DatabaseConnection;
 import Entities.Person;
 import Entities.PersonNoAI;
+import Entities.Teacher;
 import ORM.Annotations.Table;
 import ORM.Base.Entity;
 import ORM.Base.Field;
@@ -26,26 +27,24 @@ public class Main {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
             Person timmy = new Person("Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
-            PersonNoAI test = new PersonNoAI(5,"Timmy","Turner", LocalDate.of(1992,5,21));
+            Teacher timmyTeacher = new Teacher(1);
 
-            // get an Entity object from Timmy - does not contain any info from timmy
-            Entity emptyEnt = Manager.getEntity(timmy);
+            // get an Entity descriptor object from Timmy - does not contain any info from timmy
+            Entity emptyDescriptor = Manager.getEntity(timmy);
 
             // create a new Entity with info from Timmy object
             Entity timmyEnt = new Entity(timmy);
-            System.out.println("Timmy's class type: " + timmyEnt.getEntityClass().toString());
-            System.out.println("Table Name: " + timmyEnt.getTableName());
-            Field[] timmyFields = timmyEnt.getFields();
-            for(Field field : timmyFields) {
-                System.out.println("Value: " + field.getValue() + " - Type: " + field.getFieldType());
-            }
+            Entity timmyTeacherEnt = new Entity(timmyTeacher);
 
+            //System.out.println("Timmy's class type: " + timmyEnt.getEntityClass().toString());
+            //System.out.println("Table Name: " + timmyEnt.getTableName());
+            Field[] timmyFields = timmyEnt.getFields();
 
             String insert = Statement.insert(timmyEnt);
-            System.out.println(insert);
+            //System.out.println(insert);
             // Table init String creation Test
             String tableInit = Statement.initFromClass(timmy.getClass());
-            System.out.println(tableInit);
+            //System.out.println(tableInit);
 
             //DB table creation Test
             PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
@@ -55,9 +54,6 @@ public class Main {
             PreparedStatement insertTimmy = db.prepareStatement(insert, java.sql.Statement.RETURN_GENERATED_KEYS);
             insertTimmy.executeUpdate();
             ResultSet resultSet = insertTimmy.getGeneratedKeys();
-            while(resultSet.next())
-                System.out.println("Key: " + resultSet.getInt(1));
-
 
             SelectQuery selectQuery = new SelectQuery();
             selectQuery.addCondition("id",1);
@@ -65,44 +61,17 @@ public class Main {
             String select = selectQuery.buildQuery();
 
             Person selectedTimmy = Manager.executeSelect(Person.class, select);
-            System.out.println(selectedTimmy.getFirstName());
-            System.out.println("Timmy's ID: " + selectedTimmy.getId());
+            //System.out.println(selectedTimmy.getFirstName());
+            //System.out.println("Timmy's ID: " + selectedTimmy.getId());
 
             SelectQuery selectVorname = new SelectQuery();
             selectVorname.addTargets("birthdate");
             selectVorname.addTables(timmyEnt.getTableName());
             selectVorname.addCondition("id", 1);
             select = selectVorname.buildQuery();
-            System.out.println(select);
+            //System.out.println(select);
             Date TimmysVorname = Manager.executeSelect(Date.class, select); //
-            System.out.println("Timmy's Geburtstag = " + TimmysVorname);
-
-//            insert = stmt.insert(new Entity(test));
-//            insertTimmy = db.getConnection().prepareStatement(insert);
-//            insertTimmy.execute();
-
-//            // MetaData extraction Test
-//            List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);
-//            for( MetaData.fieldData field : timmyObject) {
-//                System.out.println(field.type + " - " + field.value);
-//            }
-//
-
-//            Person james = new Person(15, "test", "test",LocalDate.now());
-//            insertPersonString = statement.insert(james,"t_person");
-//            db.getConnection().prepareStatement(insertPersonString);
-//            insertTimmy.execute();
-
-            //Annotation Test
-//            Table an = timmy.getClass().getAnnotation(Table.class);
-//            System.out.println(an.name());
-//            System.out.println(an);
-//            System.out.println(an.annotationType());
-//
-//            //Init Table from Annotations Test
-//            String timmyInit = statement.initFromClass(timmy.getClass());
-//
-//            System.out.println(timmyInit);
+            //System.out.println("Timmy's Geburtstag = " + TimmysVorname);
 
         // quick error message comparison - all 3 will be printed if eg. db is not reachable
         } catch (Exception e) {
