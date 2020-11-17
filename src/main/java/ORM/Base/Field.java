@@ -6,6 +6,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.AnnotatedType;
 
+/**<h1>Class </h1>
+ *
+ */
 public class Field {
     static final Logger fieldLogger = LogManager.getLogger("Field Logger");
 
@@ -15,6 +18,9 @@ public class Field {
     private boolean primary;
     private boolean autoIncrement;
     private boolean foreign;
+
+    private String foreignTable;
+    private String foreignColumn;
 
     public Field(Entity entity, java.lang.reflect.Field field) {
         this.entity = entity;
@@ -45,4 +51,8 @@ public class Field {
     public boolean isPrimary() { return this.primary; }
     public boolean isAutoIncrement() { return this.autoIncrement; }
     public boolean isForeign() { return this.foreign; }
+
+    public boolean isMtoN () {
+        return this.foreignTable.isEmpty();
+    }
 }

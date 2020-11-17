@@ -3,6 +3,7 @@ package ORM.Base;
 import ORM.MetaData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Entity {
@@ -10,6 +11,7 @@ public class Entity {
     private Object object;
     private String tableName;
     private Field[] fields;
+    private Field[] primaryFields;
     private Field[] internalFields;
     private Field[] externalFields;
 
@@ -34,12 +36,16 @@ public class Entity {
         this.object = obj;
 
         List<Field> fieldsList = new ArrayList<>();
+        List<Field> primaryFieldsList = new ArrayList<>();
         List<Field> internalFieldsList = new ArrayList<>();
         List<Field> externalFieldsList = new ArrayList<>();
         java.lang.reflect.Field[] fields = obj.getClass().getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
             fieldsList.add(ormField);
+            if(ormField.isPrimary()) {
+                primaryFieldsList.add(ormField);
+            }
             if(ormField.isForeign()) {
                 externalFieldsList.add(ormField);
             } else {
@@ -47,10 +53,11 @@ public class Entity {
             }
         }
         this.fields = fieldsList.toArray(new Field[0]);
+        this.primaryFields = primaryFieldsList.toArray(new Field[0]);
         this.internalFields = internalFieldsList.toArray(new Field[0]);
         this.externalFields = externalFieldsList.toArray(new Field[0]);
-
     }
+
 
     public String getTableName() { return tableName; }
     public Field[] getFields() { return fields; }

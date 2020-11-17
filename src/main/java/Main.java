@@ -1,32 +1,27 @@
 import Database.DatabaseConnection;
 import Entities.Person;
-import Entities.PersonNoAI;
 import Entities.Teacher;
-import ORM.Annotations.Table;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Manager;
-import ORM.MetaData;
 import ORM.Queries.SelectQuery;
-import ORM.Statement;
+import ORM.Queries.Statement;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.annotation.Annotation;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.util.List;
 
 public class Main {
     static final Logger mainLogger = LogManager.getLogger("Main Logger");
     public static void main(String[] args) {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
-            Person timmy = new Person("Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
+            Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             Teacher timmyTeacher = new Teacher(1);
 
             // get an Entity descriptor object from Timmy - does not contain any info from timmy
@@ -49,11 +44,11 @@ public class Main {
             //DB table creation Test
             PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
-            PreparedStatement initPerson = db.prepareStatement(tableInit);
-            initPerson.execute();
-            PreparedStatement insertTimmy = db.prepareStatement(insert, java.sql.Statement.RETURN_GENERATED_KEYS);
-            insertTimmy.executeUpdate();
-            ResultSet resultSet = insertTimmy.getGeneratedKeys();
+            Manager.createTableFromObject(timmy);
+            Manager.save(timmy);
+            timmy = new Person(1,"Timmy","Neutron", LocalDate.of(1992,5,21));
+            Manager.saveOrUpdate(timmy);
+
 
             SelectQuery selectQuery = new SelectQuery();
             selectQuery.addCondition("id",1);

@@ -1,9 +1,11 @@
 package ORM;
 
 import Database.DatabaseConnection;
-import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import ORM.Queries.InsertQuery;
+import ORM.Queries.SelectQuery;
+import ORM.Queries.Statement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -231,4 +233,49 @@ public final class Manager {
         }
     }
 
+    //TODO refactor into CREATE TABLE query class
+    public static void createTableFromObject(Object object) {
+        try {
+            List<String> data = MetaData.getAnnotationColumnData(object.getClass());
+            StringBuilder initTable = new StringBuilder();
+            initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(object.getClass())).append(" (");
+            for (String sql : data) {
+                initTable.append(sql).append(" ");
+            }
+            initTable.append(");");
+            PreparedStatement initStmt = db.prepareStatement(initTable.toString());
+            initStmt.execute();
+        }catch (SQLException sql) {
+            managerLogger.error(sql);
+        }
+    }
+
+    public static void save(Object object) {
+        try{
+            Entity entity = new Entity(object); // TODO change to object.getEntity method?
+            InsertQuery insertQuery = new InsertQuery();
+            String insertString = insertQuery.buildQuery(entity);
+            managerLogger.info("Insert: " + insertString);
+            PreparedStatement insertStmt = db.prepareStatement(insertString);
+            insertStmt.executeUpdate();
+            managerLogger.info(object.toString() + " has been inserted into " + entity.getTableName() + ".");
+        } catch (SQLException sql) {
+            managerLogger.error(sql);
+        }
+    }
+
+    public static void saveOrUpdate(Object object) {
+        try{
+            Entity entity = new Entity(object); // TODO change to object.getEntity method?
+            InsertQuery insertQuery = new InsertQuery();
+            insertQuery.enableUpsert();
+            String insertString = insertQuery.buildQuery(entity);
+            managerLogger.info("Upsert: " + insertString);
+            PreparedStatement insertStmt = db.prepareStatement(insertString);
+            insertStmt.executeUpdate();
+            managerLogger.info(object.toString() + " has been inserted into " + entity.getTableName() + " or the entry has been updated.");
+        } catch (SQLException sql) {
+            managerLogger.error(sql);
+        }
+    }
 }
