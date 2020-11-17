@@ -4,7 +4,7 @@ import java.util.*;
 
 
 //TODO change string varargs to generic varargs for easier use
-public class SelectQuery implements Query{
+public class SelectQuery implements Query,QueryLanguage{
     private final String operation = "SELECT";
     List<String> targets = new ArrayList<>();
     List<String> tables = new ArrayList<>();
@@ -94,9 +94,7 @@ public class SelectQuery implements Query{
     }
 
     @Override
-    public void updateQuery() {
-
-    }
+    public void updateQuery() {}
 
     @Override
     public String getQuery() {

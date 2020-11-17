@@ -1,9 +1,12 @@
-package ORM;
+package ORM.Queries;
 
 import Database.DatabaseConnection;
 import ORM.Annotations.Table;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import ORM.MetaData;
+import ORM.Parser;
+import ORM.Utility;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,6 +21,7 @@ public final class Statement {
     static final Logger statementLogger = LogManager.getLogger("Statement Logger");
     private Statement() {}
 
+    // OLD ONE DO NOT USE
     public static String initTable(Class<?> tableClass) {
         List<MetaData.fieldData> fields = MetaData.classMetaData(tableClass);
         StringBuilder initTable = new StringBuilder();
