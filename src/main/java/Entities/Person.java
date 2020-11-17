@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Table(name = "t_person", subclasses = {"t_student","t_teacher"})
 public class Person {
-    @Column(primary = true,autoIncrement = true)
+    @Column(primary = true/*,autoIncrement = true*/) // TODO - get autoIncrementation done - currently does not work with upsert because of automatic AutoIncrement flag that ALWAYS ignores the entry, even in upsert
     private int id;   // id should not get changed as it is the primary key - but if we want to enable autoIncrement, we need to change it after initialization
     @Column(nullable = false, length = 50)
     private String firstName;
