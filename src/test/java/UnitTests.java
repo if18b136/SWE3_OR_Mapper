@@ -1,14 +1,10 @@
 import Database.DatabaseConnection;
 import Entities.Person;
-import ORM.Annotations.Table;
-import ORM.Manager;
 import ORM.MetaData;
 import ORM.Queries.SelectQuery;
-import ORM.Statement;
 import org.junit.jupiter.api.Test;
 import static org.junit.Assert.*;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
