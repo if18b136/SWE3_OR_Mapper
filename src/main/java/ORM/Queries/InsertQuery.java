@@ -19,7 +19,7 @@ public class InsertQuery implements QueryLanguage {
     public void disableUpsert() {this.upsert = false;}
 
     //Manager needs to make sure that every object will be created as an entity for insertion.
-    public String buildQuery(Entity entity) {
+    public String buildQuery(Object object, Entity entity) {
         try{
             if (entity.getTableName().isEmpty()) {
                 throw new InvalidParameterException("Entity :" + entity.toString() + " has no table name");
@@ -37,13 +37,15 @@ public class InsertQuery implements QueryLanguage {
             for(int i = 0; i < (fields.length-1); i++) {
                 if(!fields[i].isAutoIncrement() || upsert) { // with upsert check here every object that gets upserted  NEEDS a set PK!!!!
                     columns.append(fields[i].getColumnName()).append(comma).append(space);      // "column Name" + "," + " "
-                    columnValues.append(quotation).append(fields[i].getValue()).append(quotation).append(comma).append(space);      // "column value" + "," + " "
+                    System.out.println(fields[i].getValue(object));
+                    columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation).append(comma).append(space);      // "column value" + "," + " "
                 }
             }
             // last one needs extra append
             if(!fields[fields.length-1].isAutoIncrement()) {
                 columns.append(fields[fields.length-1].getColumnName()).append(brClosed).append(space);
-                columnValues.append(quotation).append(fields[fields.length-1].getValue()).append(quotation).append(brClosed);
+                System.out.println(fields[fields.length-1].getValue(object));
+                columnValues.append(quotation).append(fields[fields.length-1].getValue(object)).append(quotation).append(brClosed);
             }
 
             // add on duplicate overwrite

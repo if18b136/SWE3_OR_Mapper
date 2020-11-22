@@ -122,4 +122,14 @@ public final class MetaData {
         }
         return fieldList;
     }
+
+
+    /**<h2>Method buildTableName</h2>
+     * Little helper function to get normed table names.
+     * @param name Simple name of class without @Table Annotation or empty tableName
+     * @return String construct of "t_" + class name in lower case.
+     */
+    public static String buildTableName(String name) {
+        return "t_" + name.toLowerCase();
+    }
 }

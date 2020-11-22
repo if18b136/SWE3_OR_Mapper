@@ -44,7 +44,7 @@ public final class Statement {
         return initTable.toString();
     }
 
-    public static String insert(Entity entity) {
+    public static String insert(Object object, Entity entity) {
         Field[] fields = entity.getFields();
         // if fields has primary field:
         int i = Utility.hasPK(fields).size() > 0 ? 1 : 0;
@@ -58,15 +58,15 @@ public final class Statement {
         if(i == 0) {
             for( ; i < (fields.length-1) ; i++) {
                 names.append(fields[i].getColumnName()).append(", ");
-                values.append("\"").append(fields[i].getValue()).append("\"").append(", ");
+                values.append("\"").append(fields[i].getValue(object)).append("\"").append(", ");
             }
             // last one needs extra append
             names.append(fields[fields.length-1].getColumnName()).append(") ");
-            values.append("\"").append(fields[fields.length-1].getValue()).append("\"").append(")");
+            values.append("\"").append(fields[fields.length-1].getValue(object)).append("\"").append(")");
         } else {
             for( int j : Utility.noPKFields(fields)) {
                 names.append(fields[j].getColumnName());
-                values.append("\"").append(fields[j].getValue()).append("\"");
+                values.append("\"").append(fields[j].getValue(object)).append("\"");
                 if(fields[j].equals(fields[fields.length-1])) { // if the last field is an AI field, we need to append different
                     names.append(") ");
                     values.append(")");

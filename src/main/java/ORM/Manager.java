@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -40,41 +41,6 @@ public final class Manager {
 
     private Manager() {}
 
-    // altering the existing entity object was a bad idea - method creates a new one
-    public static Entity SQLinsert(Entity entity) {
-        try {
-            String insertString = Statement.insert(entity);
-            if(doesTableExist(entity.getTableName())) {
-                PreparedStatement insert = db.prepareStatement(insertString, java.sql.Statement.RETURN_GENERATED_KEYS);
-                insert.executeUpdate();
-                ResultSet res = insert.getGeneratedKeys();
-                if(res.next()) {
-                    int id = res.getInt(1);
-                    return null;
-                }
-
-            }
-        } catch (SQLException sql) {
-            managerLogger.error(sql);
-        }
-        return null;
-    }
-
-    //TODO create a generic select statement or enough options for different selects
-   public static Entity SQLselectAll(Entity entity,int id) throws SQLException {
-        PreparedStatement select = db.prepareStatement("select * from ? where ? = ?");
-        select.setString(1,entity.getTableName());
-        for(Field field : entity.getFields()) {
-            if (field.isPrimary()) {
-                select.setString(2,field.getColumnName());
-                break;
-            }
-        }
-        select.setInt(3,id);
-
-        return null;
-   }
-
    // this queries an entity of the object class for further use
    public static Entity getEntity(Object obj) {
         Class<?> clazz = obj.getClass();
@@ -88,6 +54,8 @@ public final class Manager {
 
    //TODO: write getCachedObject method
     public static Object getCachedObject(Class<?> type, ResultSet res){
+
+
         return null;
     }
 
@@ -166,6 +134,70 @@ public final class Manager {
 ////                field.set(object,value);
 //            }
 //        }
+//    }
+
+    //TODO heavy refactoring to prevent sql injection (don't directly insert the pks as values) and overall better readability
+    public static Object createObject(Class clazz, Object[] pks)  {
+        try {
+
+            Entity entity = getEntity(clazz);
+            SelectQuery select = new SelectQuery();
+            select.addTables(entity.getTableName());
+            List<String> targets = new ArrayList<>();
+            for(Field field : entity.getInternalFields()) {
+                targets.add(field.getColumnName());
+            }
+            select.addTargets(targets.toArray(new String[0]));
+            int i = 0;
+            for(Field field : entity.getPrimaryFields()) {
+                select.addCondition(field.getColumnName(),pks[i]);
+            }
+            PreparedStatement stmt = db.prepareStatement(select.buildQuery());
+            ResultSet res = stmt.executeQuery();
+            Object rval = null;
+            try{
+
+                if (res.next()){
+                    rval = createObject(res, clazz);
+                }
+            } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            res.close();
+
+            if(rval == null) { throw new SQLException("No data."); }
+            return rval;
+        } catch (SQLException sql) {
+            sql.printStackTrace();
+        }
+        return null;
+    }
+
+//    //TODO check if createObjectNew and createObject do the same
+//    protected static Object createObjectNew(Class clazz, ResultSet res, Collection<Object> objects) {
+//        Object rval = getCachedObject(clazz, res);
+//
+//        if(rval == null) {
+//            if(objects == null) { objects = new ArrayList<>(); }
+//            try {
+//                objects.add(rval = clazz.getDeclaredConstructor().newInstance());
+//
+//                for(Field field: getEntity(clazz).getPrimaryFields()) {
+//                    field.setValue(rval, field.toFieldType(res.getObject(field.getColumnName())));
+//                }
+//
+//                for(Field field: getEntity(clazz).getFields()) {
+//                    if(!field.isPrimary()) {
+//                        field.setValue(rval, field.toFieldType(res.getObject(field.getColumnName())));
+//                    }
+//                }
+//            }
+//            catch (Exception ex) {
+//                int x = 0;
+//                return null;
+//            }
+//        }
+//        return rval;
 //    }
 
     private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
@@ -252,9 +284,11 @@ public final class Manager {
 
     public static void save(Object object) {
         try{
-            Entity entity = new Entity(object); // TODO change to object.getEntity method?
+            Entity entity = getEntity(object);
             InsertQuery insertQuery = new InsertQuery();
-            String insertString = insertQuery.buildQuery(entity);
+            String insertString = insertQuery.buildQuery(object, entity);
+            // we cant just give the query the empty entity classifier - no values from the object are in there!
+            // Either insert the whole object or extract the values and give them to querybuilder as arguments
             managerLogger.info("Insert: " + insertString);
             PreparedStatement insertStmt = db.prepareStatement(insertString);
             insertStmt.executeUpdate();
@@ -269,7 +303,7 @@ public final class Manager {
             Entity entity = new Entity(object); // TODO change to object.getEntity method?
             InsertQuery insertQuery = new InsertQuery();
             insertQuery.enableUpsert();
-            String insertString = insertQuery.buildQuery(entity);
+            String insertString = insertQuery.buildQuery(object, entity);
             managerLogger.info("Upsert: " + insertString);
             PreparedStatement insertStmt = db.prepareStatement(insertString);
             insertStmt.executeUpdate();

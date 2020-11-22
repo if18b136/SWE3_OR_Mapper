@@ -1,5 +1,6 @@
 package ORM.Base;
 
+import ORM.Annotations.Table;
 import ORM.MetaData;
 
 import java.util.ArrayList;
@@ -15,33 +16,36 @@ public class Entity {
     private Field[] internalFields;
     private Field[] externalFields;
 
-    // construct Entity from test class - will not have any values in fields
+    /**<h2>Entity Constructor from class</h2>
+     * calls initEntity to initialize the Entity object
+     * @param type Class from which the Entity will be from
+     */
     public Entity(Class<?> type) {
-        this.tableName = MetaData.getAnnotationTableName(type); // TODO default to className?
-        this.entityClass = type;
-
-        List<Field> fieldsList = new ArrayList<>();
-        java.lang.reflect.Field[] fields = type.getDeclaredFields();
-        for(java.lang.reflect.Field field : fields) {
-            Field ormField = new Field(this, field);
-            fieldsList.add(ormField);
-        }
-        this.fields = fieldsList.toArray(new Field[0]);
+        initEntity(type);
     }
 
-    // construct Entity from test class object
+    /**<h2>Entity Constructor from object</h2>
+     * calls initEntity to initialize the Entity object
+     * @param obj Object from which the Entity will be from
+     */
     public Entity(Object obj) {
-        this.tableName = MetaData.getAnnotationTableName(obj.getClass()); // TODO default to className?
-        this.entityClass = obj.getClass();
-        this.object = obj;
+        this.object = obj;  //TODO if we don't want to save the whole object, we need to change the field annotation from Fields to methods of the classes, so we can access the method values instead of the whole object in Field.getValue()
+        initEntity(obj.getClass());
+    }
+
+    private void initEntity(Class<?> type) {
+        String tableName = MetaData.getAnnotationTableName(type);
+        this.tableName = tableName == null || tableName.equals("") ? MetaData.buildTableName(type.getSimpleName()) : tableName;
+        this.entityClass = type;
 
         List<Field> fieldsList = new ArrayList<>();
         List<Field> primaryFieldsList = new ArrayList<>();
         List<Field> internalFieldsList = new ArrayList<>();
         List<Field> externalFieldsList = new ArrayList<>();
-        java.lang.reflect.Field[] fields = obj.getClass().getDeclaredFields();
+        java.lang.reflect.Field[] fields = type.getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
+            ormField.setFieldType(field.getDeclaringClass());
             fieldsList.add(ormField);
             if(ormField.isPrimary()) {
                 primaryFieldsList.add(ormField);
@@ -58,10 +62,12 @@ public class Entity {
         this.externalFields = externalFieldsList.toArray(new Field[0]);
     }
 
-
     public String getTableName() { return tableName; }
     public Field[] getFields() { return fields; }
     public Class<?> getEntityClass() { return entityClass; }
     public Object getObject() { return object; }
+    public Field[] getInternalFields() { return internalFields; }
+    public Field[] getPrimaryFields() { return primaryFields; }
+    public Field[] getExternalFields() { return externalFields; }
 
 }
