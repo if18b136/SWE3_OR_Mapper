@@ -3,6 +3,7 @@ package ORM;
 import Database.DatabaseConnection;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import ORM.Queries.CreateTableQuery;
 import ORM.Queries.InsertQuery;
 import ORM.Queries.SelectQuery;
 import ORM.Queries.Statement;
@@ -59,7 +60,7 @@ public final class Manager {
         return null;
     }
 
-    private static boolean doesTableExist(String tableName) throws SQLException {
+    private static boolean tableExists(String tableName) throws SQLException {
         PreparedStatement table = db.prepareStatement("show tables like ?;");
         table.setString(1,tableName);
         ResultSet res = table.executeQuery();
@@ -136,11 +137,16 @@ public final class Manager {
 //        }
 //    }
 
-    //TODO heavy refactoring to prevent sql injection (don't directly insert the pks as values) and overall better readability
-    public static Object createObject(Class clazz, Object[] pks)  {
-        try {
+    public static <T> T getObject(Class<T> t, Object... pks) {
+            return (T) createObject(t,pks);
+    }
 
-            Entity entity = getEntity(clazz);
+    //TODO heavy refactoring to prevent sql injection (don't directly insert the pks as values) and overall better readability
+    public static Object createObject(Class clazz, Object... pks)  {
+        try {
+            System.out.println(clazz.getName());
+            Entity entity = Entities.get(clazz);    // getEntity needs an object as argument and so does not work here
+
             SelectQuery select = new SelectQuery();
             select.addTables(entity.getTableName());
             List<String> targets = new ArrayList<>();
@@ -152,7 +158,9 @@ public final class Manager {
             for(Field field : entity.getPrimaryFields()) {
                 select.addCondition(field.getColumnName(),pks[i]);
             }
-            PreparedStatement stmt = db.prepareStatement(select.buildQuery());
+            select.buildQuery();
+            System.out.println(select.getQuery());
+            PreparedStatement stmt = db.prepareStatement(select.getQuery());
             ResultSet res = stmt.executeQuery();
             Object rval = null;
             try{
@@ -172,33 +180,6 @@ public final class Manager {
         }
         return null;
     }
-
-//    //TODO check if createObjectNew and createObject do the same
-//    protected static Object createObjectNew(Class clazz, ResultSet res, Collection<Object> objects) {
-//        Object rval = getCachedObject(clazz, res);
-//
-//        if(rval == null) {
-//            if(objects == null) { objects = new ArrayList<>(); }
-//            try {
-//                objects.add(rval = clazz.getDeclaredConstructor().newInstance());
-//
-//                for(Field field: getEntity(clazz).getPrimaryFields()) {
-//                    field.setValue(rval, field.toFieldType(res.getObject(field.getColumnName())));
-//                }
-//
-//                for(Field field: getEntity(clazz).getFields()) {
-//                    if(!field.isPrimary()) {
-//                        field.setValue(rval, field.toFieldType(res.getObject(field.getColumnName())));
-//                    }
-//                }
-//            }
-//            catch (Exception ex) {
-//                int x = 0;
-//                return null;
-//            }
-//        }
-//        return rval;
-//    }
 
     private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
@@ -265,34 +246,41 @@ public final class Manager {
         }
     }
 
-    //TODO refactor into CREATE TABLE query class
-    public static void createTableFromObject(Object object) {
+    public static void createTable(Object object) {
         try {
-            List<String> data = MetaData.getAnnotationColumnData(object.getClass());
-            StringBuilder initTable = new StringBuilder();
-            initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(object.getClass())).append(" (");
-            for (String sql : data) {
-                initTable.append(sql).append(" ");
-            }
-            initTable.append(");");
-            PreparedStatement initStmt = db.prepareStatement(initTable.toString());
+            Entity entity = getEntity(object);
+            System.out.println(new CreateTableQuery().buildQuery(entity));
+            PreparedStatement initStmt = db.prepareStatement(new CreateTableQuery().buildQuery(entity));
             initStmt.execute();
-        }catch (SQLException sql) {
-            managerLogger.error(sql);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
+
+//    //TODO refactor into CREATE TABLE query class
+//    public static void createTableFromObject(Object object) {
+//        try {
+//            List<String> data = MetaData.getAnnotationColumnData(object.getClass());
+//            StringBuilder initTable = new StringBuilder();
+//            initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(object.getClass())).append(" (");
+//            for (String sql : data) {
+//                initTable.append(sql).append(" ");
+//            }
+//            initTable.append(");");
+//            managerLogger.info("createTableFromObject() - SQL String: " + initTable.toString());
+//            PreparedStatement initStmt = db.prepareStatement(initTable.toString());
+//            initStmt.execute();
+//        }catch (SQLException sql) {
+//            managerLogger.error(sql);
+//        }
+//    }
 
     public static void save(Object object) {
         try{
             Entity entity = getEntity(object);
-            InsertQuery insertQuery = new InsertQuery();
-            String insertString = insertQuery.buildQuery(object, entity);
-            // we cant just give the query the empty entity classifier - no values from the object are in there!
-            // Either insert the whole object or extract the values and give them to querybuilder as arguments
-            managerLogger.info("Insert: " + insertString);
-            PreparedStatement insertStmt = db.prepareStatement(insertString);
+            PreparedStatement insertStmt = db.prepareStatement(new InsertQuery().buildQuery(object,entity));
             insertStmt.executeUpdate();
-            managerLogger.info(object.toString() + " has been inserted into " + entity.getTableName() + ".");
+            managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + ".");
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }
@@ -307,7 +295,7 @@ public final class Manager {
             managerLogger.info("Upsert: " + insertString);
             PreparedStatement insertStmt = db.prepareStatement(insertString);
             insertStmt.executeUpdate();
-            managerLogger.info(object.toString() + " has been inserted into " + entity.getTableName() + " or the entry has been updated.");
+            managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + " or the entry has been updated.");
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }

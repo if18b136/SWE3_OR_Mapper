@@ -9,7 +9,6 @@ import java.util.List;
 
 public class Entity {
     private Class<?> entityClass;
-    private Object object;
     private String tableName;
     private Field[] fields;
     private Field[] primaryFields;
@@ -29,7 +28,6 @@ public class Entity {
      * @param obj Object from which the Entity will be from
      */
     public Entity(Object obj) {
-        this.object = obj;  //TODO if we don't want to save the whole object, we need to change the field annotation from Fields to methods of the classes, so we can access the method values instead of the whole object in Field.getValue()
         initEntity(obj.getClass());
     }
 
@@ -45,12 +43,13 @@ public class Entity {
         java.lang.reflect.Field[] fields = type.getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
-            ormField.setFieldType(field.getDeclaringClass());
             fieldsList.add(ormField);
             if(ormField.isPrimary()) {
                 primaryFieldsList.add(ormField);
             }
             if(ormField.isForeign()) {
+                ormField.setForeignColumn(MetaData.getForeignColumn(field));
+                ormField.setForeignTable(MetaData.getForeignTable(field));
                 externalFieldsList.add(ormField);
             } else {
                 internalFieldsList.add(ormField);
@@ -65,7 +64,6 @@ public class Entity {
     public String getTableName() { return tableName; }
     public Field[] getFields() { return fields; }
     public Class<?> getEntityClass() { return entityClass; }
-    public Object getObject() { return object; }
     public Field[] getInternalFields() { return internalFields; }
     public Field[] getPrimaryFields() { return primaryFields; }
     public Field[] getExternalFields() { return externalFields; }

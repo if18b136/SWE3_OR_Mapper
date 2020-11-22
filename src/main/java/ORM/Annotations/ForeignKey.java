@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ForeignKey {
-    String table() default "";
-    String column() default "";
-    String foreignColumn() default "";
+    String table() default "";          //table which the fk is referencing
+    String column() default "";         //column which the fk is referencing
+    String foreignColumn() default "";  //m:n column which also references the fk
 }

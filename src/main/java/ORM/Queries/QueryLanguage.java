@@ -16,4 +16,10 @@ public interface QueryLanguage {
     String asNew = "AS new";
     String odku = "ON DUPLICATE KEY UPDATE";
     char dot = '.';
+    String primary = "PRIMARY KEY";
+    String foreign = "FOREIGN KEY";
+    String autoInc = "AUTO_INCREMENT";
+    String unique = "UNIQUE";
+    String notNull = "NOT NULL";
+    String reference = "REFERENCES";
 }

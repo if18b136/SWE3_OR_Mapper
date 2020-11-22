@@ -40,7 +40,7 @@ public final class MetaData {
                 if(annotation instanceof Column) {
                     StringBuilder sql = new StringBuilder();
                     String name = field.getName();
-                    String type = Parser.parseType(field.getType().getName(),((Column) annotation).length());
+                    String type = Parser.parseType(field.getType().getName(),((Column) annotation).length());   //why is there a .length? and why does it work with it?
                     String primary = ((Column) annotation).primary() ? "PRIMARY KEY " : "";
                     String autoInc = ((Column) annotation).autoIncrement() ? "AUTO_INCREMENT " : "";
                     String unique = ((Column) annotation).unique() ? "UNIQUE " : "";
@@ -100,6 +100,36 @@ public final class MetaData {
             }
         }
         return false;
+    }
+
+    public static String getForeignColumn(Field field) {
+        try{
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if(annotation instanceof ForeignKey) {
+                    return ((ForeignKey) annotation).column();
+                }
+            }
+            throw new Exception("no Foreign Key Annotation set for Field: " + field.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getForeignTable(Field field) {
+        try{
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if(annotation instanceof ForeignKey) {
+                    return ((ForeignKey) annotation).table();
+                }
+            }
+            throw new Exception("no Foreign Key Annotation set for Field: " + field.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

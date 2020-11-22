@@ -18,7 +18,8 @@ public class InsertQuery implements QueryLanguage {
     public void enableUpsert() {this.upsert = true;}
     public void disableUpsert() {this.upsert = false;}
 
-    //Manager needs to make sure that every object will be created as an entity for insertion.
+    // Entity could be created to only need one argument,
+    // but Manager handles entity creation so we would have to call Manager one extra time from here which is not resource friendly
     public String buildQuery(Object object, Entity entity) {
         try{
             if (entity.getTableName().isEmpty()) {

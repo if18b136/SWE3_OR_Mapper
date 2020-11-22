@@ -13,7 +13,7 @@ public class Course {
     @Column(nullable = false)
     private Float ects;
     @Column(nullable = false)
-    @ForeignKey(table = "t_teacher", foreignColumn = "id")
+    @ForeignKey(table = "t_teacher", column = "id")
     private Teacher teacher;
 
     public Course() {}

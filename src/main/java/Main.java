@@ -3,6 +3,7 @@ import Entities.Person;
 import Entities.PersonNoAI;
 import Entities.Teacher;
 import ORM.Base.Entity;
+import ORM.Base.Field;
 import ORM.Manager;
 import ORM.Queries.SelectQuery;
 import ORM.Queries.Statement;
@@ -10,7 +11,6 @@ import ORM.Queries.Statement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -25,11 +25,18 @@ public class Main {
             Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
-            Manager.createTableFromObject(timmy);
+            Manager.createTable(timmy);
 
             Manager.save(timmy);
             timmy.setFirstName("Thomas");
             Manager.saveOrUpdate(timmy);
+
+            Person thomas = Manager.getObject(Person.class,1);
+            System.out.println(thomas.getFirstName());
+
+            Teacher thomasTeacher = new Teacher(1,1);
+            Manager.createTable(thomasTeacher);
+            Manager.save(thomasTeacher);
 
 
 

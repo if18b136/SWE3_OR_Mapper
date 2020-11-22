@@ -8,15 +8,15 @@ import java.util.List;
 
 @Table(name = "t_teacher", superclass = "t_person")
 public class Teacher extends Person{
-    @Column(primary = true, autoIncrement = true)
+    @Column(primary = true)
     private int id;
 
     @Column(nullable = false)
-    @ForeignKey(table = "t_person", foreignColumn = "id")
+    @ForeignKey(table = "t_person", column = "id")
     private int personId;
 
     @Column
-    @ForeignKey(table = "t_course", foreignColumn = "id")
+    @ForeignKey(table = "t_course", column = "id")
     private List<Course> teachingCourses;
 
     public Teacher() {}
@@ -25,6 +25,11 @@ public class Teacher extends Person{
         this.id = id;
         this.personId = personId;
         this.teachingCourses = teachingCourses;
+    }
+
+    public Teacher(int id, int personId) {
+        this.id = id;
+        this.personId = personId;
     }
 
     public Teacher(int personId, List<Course> teachingCourses) {
