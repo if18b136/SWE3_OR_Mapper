@@ -16,7 +16,6 @@ public class Teacher extends Person{
     private int personId;
 
     @Column
-    @ForeignKey(table = "t_course", column = "id")
     private List<Course> teachingCourses;
 
     public Teacher() {}

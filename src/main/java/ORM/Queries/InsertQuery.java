@@ -1,7 +1,10 @@
 package ORM.Queries;
 
+import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import ORM.Manager;
+import ORM.Parser;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -44,8 +47,27 @@ public class InsertQuery implements QueryLanguage {
                     } else {
                         first = false;
                     }
+
                     columns.append(fields[i].getColumnName());      // "--column Name--"
-                    columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation);      // "--column value--"
+                    if (fields[i].isForeign()) {
+                        String foreignColumnName = fields[i].getForeignColumn();
+                        Entity foreignEntity = Manager.isCached(fields[i].getFieldType());
+                        if (foreignEntity != null) {
+                            // means we have a foreignKey custom class
+                            Class<?> foreignClass = foreignEntity.getEntityClass();
+                            try {
+                                java.lang.reflect.Field foreignField = foreignClass.getDeclaredField(foreignColumnName);
+                                foreignField.setAccessible(true);
+                                columnValues.append(quotation).append(foreignField.get(fields[i].getValue(object))).append(quotation);      // "--column value--"
+                            } catch (NoSuchFieldException | IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation);      // "--column value--"
+                        }
+                    } else {
+                        columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation);      // "--column value--"
+                    }
                 }
             }
             columns.append(brClosed).append(space);

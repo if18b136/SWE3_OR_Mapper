@@ -35,7 +35,7 @@ public final class Manager {
         }
     }
 
-    private static HashMap<Class<?>, Entity> Entities = new HashMap<>();
+    protected static HashMap<Class<?>, Entity> Entities = new HashMap<>();
     private static List<Object> objectCache = new ArrayList<>();
 
     private Manager() {}
@@ -51,10 +51,16 @@ public final class Manager {
         return ent;
    }
 
+   //TODO get better solution for type check in table creation and value inserting
+   public static Entity isCached(Class<?> clazz) {
+       if(Entities.containsKey(clazz)) {
+           return Entities.get(clazz);
+       }
+       return null;
+   }
+
    //TODO: write getCachedObject method
     public static Object getCachedObject(Class<?> type, ResultSet res){
-
-
         return null;
     }
 
@@ -64,76 +70,6 @@ public final class Manager {
         ResultSet res = table.executeQuery();
         return res.next();
     }
-
-
-    // TODO currently only useful for single entries
-    public static <T> T executeSelect(Class<T> type, String query) {
-        try{
-            java.sql.Statement stmt = DatabaseConnection.getInstance().getConnection().createStatement();
-            ResultSet res = stmt.executeQuery(query);
-
-            if(res.next()){
-                //T t = type.newInstance();     // deprecated
-                //T t = type.getDeclaredConstructor().newInstance();    //needed for loadIntoObject(resultQuery,Object)
-//                if(t.getClass().equals(String.class)) {     //TODO delete this bad code and replace with something that makes sense.
-//                    System.out.println("String needs separate handling.");
-//                    t = (T) res.getString(1);
-//                } else {
-                    //loadIntoObject(res,t); // why not with return value to write to t?
-                T newT = createObject(res,type);
-//                }
-                return newT;
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        } catch (IllegalAccessException iae) {
-            iae.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-//    private static void loadIntoObject(ResultSet res, Object object) throws SQLException, IllegalAccessException, NoSuchFieldException {
-//        Class<?> objectClass = object.getClass();
-//
-//        if(!objectClass.isPrimitive() && !objectClass.equals(String.class)) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
-//            for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
-//                field.setAccessible(true);
-//                Object value = res.getObject(field.getName());
-//                Class<?> type = field.getType();
-//                if(type.isPrimitive()) {    //TODO check if own class does the same
-//                    Class<?> boxed = boxPrimitiveClass(type);
-//                    value = boxed.cast(value);
-//                } else if(value.getClass() == Date.class) {  // TODO convert externally?
-//                    value = ((Date) value).toLocalDate();
-//                }
-//                System.out.println("--- loadIntoObject: " + value.toString());
-//                field.set(object, value);
-//            }
-//        } else {
-//            // This is the way to get to more than one columns, currently not needed
-//            for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
-//                //System.out.println("    " + res.getMetaData().getColumnName(i));
-//                //java.lang.reflect.Field field = objectClass.getField(res.getMetaData().getColumnName(i));
-//                for(java.lang.reflect.Field field : objectClass.getDeclaredFields()) {
-//                    field.setAccessible(true);
-//                    System.out.println("    " + field.getName());
-//                }
-//                java.lang.reflect.Field field = objectClass.getField("value");
-//                field.setAccessible(true);
-//                System.out.println("        " + field.getName());
-//
-////                field.setAccessible(true);
-////                Object value = res.getObject(objectClass.getName());
-////                field.set(object,value);
-//            }
-//        }
-//    }
 
     public static <T> T getObject(Class<T> t, Object... pks) {
             return (T) createObject(t,pks);

@@ -4,6 +4,7 @@ import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
 import ORM.Base.Entity;
 import ORM.Base.Field;
+import ORM.Manager;
 import ORM.MetaData;
 import ORM.Parser;
 
@@ -35,7 +36,23 @@ public class CreateTableQuery implements QueryLanguage {
                     } else {
                         if(!first) { createTable.append(comma).append(space); } // every additional entry needs a ", " at the beginning
                         createTable.append(field.getColumnName()).append(space);        // "--column Name--" + " "
-                        createTable.append(Parser.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                        if(field.isForeign()) { // TODO cleanup
+                            String foreignColumnName = field.getForeignColumn();
+                            Entity foreignEntity = Manager.isCached(field.getFieldType());
+                            if(foreignEntity != null) {
+                                Class<?> foreignClass = foreignEntity.getEntityClass();
+                                try {
+                                    java.lang.reflect.Field foreignField = foreignClass.getDeclaredField(foreignColumnName);
+                                    createTable.append(Parser.parseType(foreignField.getType().getName(),((Column) annotation).length()));
+                                } catch (NoSuchFieldException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {    // Set to foreign key but is not a custom class - means user better made sure to assign the same type to both fields
+                                createTable.append(Parser.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                            }
+                        } else {
+                            createTable.append(Parser.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                        }
 
                         if(((Column) annotation).primary()) { createTable.append(space).append(primary); }
                         if (((Column) annotation).autoIncrement()) { createTable.append(space).append(autoInc); }

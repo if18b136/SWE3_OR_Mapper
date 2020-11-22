@@ -1,37 +1,32 @@
 import Database.DatabaseConnection;
 import Entities.Course;
 import Entities.Person;
-import Entities.PersonNoAI;
 import Entities.Teacher;
-import ORM.Base.Entity;
-import ORM.Base.Field;
 import ORM.Manager;
-import ORM.Queries.SelectQuery;
-import ORM.Queries.Statement;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.time.LocalDate;
-import java.util.List;
 
 public class Main {
     static final Logger mainLogger = LogManager.getLogger("Main Logger");
     public static void main(String[] args) {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
-            Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
-            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_teacher");
+            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_course");
+            dropTable.execute();
+            dropTable = db.prepareStatement("DROP TABLE if exists t_teacher");
             dropTable.execute();
             dropTable = db.prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
-            Manager.createTable(timmy);
 
+            Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
+            Manager.createTable(timmy);
             Manager.save(timmy);
+
             timmy.setFirstName("Thomas");
             Manager.saveOrUpdate(timmy);
 
@@ -39,11 +34,12 @@ public class Main {
             System.out.println(thomas.getFirstName());
 
             Teacher thomasTeacher = new Teacher(1,1);
-
             Manager.createTable(thomasTeacher);
             Manager.save(thomasTeacher);
 
-
+            Course math = new Course(1,"Applied Mathematics",4.5, thomasTeacher);
+            Manager.createTable(math);
+            Manager.save(math);
 
 //            Teacher timmyTeacher = new Teacher(1);
 //
