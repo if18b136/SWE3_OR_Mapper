@@ -257,24 +257,6 @@ public final class Manager {
         }
     }
 
-//    //TODO refactor into CREATE TABLE query class
-//    public static void createTableFromObject(Object object) {
-//        try {
-//            List<String> data = MetaData.getAnnotationColumnData(object.getClass());
-//            StringBuilder initTable = new StringBuilder();
-//            initTable.append("CREATE TABLE ").append(MetaData.getAnnotationTableName(object.getClass())).append(" (");
-//            for (String sql : data) {
-//                initTable.append(sql).append(" ");
-//            }
-//            initTable.append(");");
-//            managerLogger.info("createTableFromObject() - SQL String: " + initTable.toString());
-//            PreparedStatement initStmt = db.prepareStatement(initTable.toString());
-//            initStmt.execute();
-//        }catch (SQLException sql) {
-//            managerLogger.error(sql);
-//        }
-//    }
-
     public static void save(Object object) {
         try{
             Entity entity = getEntity(object);
