@@ -1,4 +1,5 @@
 import Database.DatabaseConnection;
+import Entities.Course;
 import Entities.Person;
 import Entities.PersonNoAI;
 import Entities.Teacher;
@@ -16,6 +17,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
     static final Logger mainLogger = LogManager.getLogger("Main Logger");
@@ -23,7 +25,9 @@ public class Main {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
             Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
-            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_person");
+            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_teacher");
+            dropTable.execute();
+            dropTable = db.prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
             Manager.createTable(timmy);
 
@@ -35,6 +39,7 @@ public class Main {
             System.out.println(thomas.getFirstName());
 
             Teacher thomasTeacher = new Teacher(1,1);
+
             Manager.createTable(thomasTeacher);
             Manager.save(thomasTeacher);
 

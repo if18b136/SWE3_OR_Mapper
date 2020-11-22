@@ -252,8 +252,8 @@ public final class Manager {
             System.out.println(new CreateTableQuery().buildQuery(entity));
             PreparedStatement initStmt = db.prepareStatement(new CreateTableQuery().buildQuery(entity));
             initStmt.execute();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException sql) {
+            sql.printStackTrace();
         }
     }
 

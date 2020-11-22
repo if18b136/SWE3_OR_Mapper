@@ -49,5 +49,5 @@ public class Teacher extends Person{
         }
     }
 
-
+    public List<Course> getTeachingCourses() { return this.teachingCourses; }
 }

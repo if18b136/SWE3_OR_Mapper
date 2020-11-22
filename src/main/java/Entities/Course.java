@@ -33,4 +33,5 @@ public class Course {
     }
 
     //TODO - Course: add getter and setter if needed
+    public String getCourseName() { return this.courseName; }
 }
