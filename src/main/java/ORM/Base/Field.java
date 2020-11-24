@@ -27,6 +27,8 @@ public class Field {
     private boolean foreign;
     private String foreignTable;
     private String foreignColumn;
+    private boolean ignore;
+    private boolean nullable;
 
     public Field(Entity entity, java.lang.reflect.Field field) {
         this.entity = entity;
@@ -37,13 +39,8 @@ public class Field {
         this.autoIncrement = MetaData.isAutoIncrement(field);
         this.foreign = MetaData.isForeign(field);
         this._fieldType = field.getType();
-//        if(field.getType().equals(List.class)) {
-//            System.out.println("----- " + this.columnName + " -----");
-//            System.out.println(field.getType());
-//            System.out.println(field.getAnnotatedType().getType());
-//            System.out.println(field.getDeclaringClass());
-//            System.out.println("--------------------");
-//        }
+        this.ignore = MetaData.isIgnore(field);
+        this.nullable = MetaData.isNullable(field);
     }
 
     public Entity getEntity() { return entity; }
@@ -79,6 +76,8 @@ public class Field {
     public boolean isPrimary() { return this.primary; }
     public boolean isAutoIncrement() { return this.autoIncrement; }
     public boolean isForeign() { return this.foreign; }
+    public boolean isNullable() { return this.nullable; }
+    public boolean ignore() { return this.ignore; }
 
     public boolean isMtoN () {
         return this.foreignTable.isEmpty();

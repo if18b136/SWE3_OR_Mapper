@@ -9,6 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Table {
     String name() default "";
-    String superclass() default "";
-    String[] subclasses() default "";
+    Class<?>[] subclasses() default Object.class;   // TODO technically currently not needed?
 }

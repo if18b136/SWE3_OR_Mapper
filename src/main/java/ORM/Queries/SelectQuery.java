@@ -32,6 +32,8 @@ public class SelectQuery implements Query,QueryLanguage{
     public String buildQuery() {
         try{
             StringBuilder selectQuery = new StringBuilder();
+            boolean first = true;
+
             selectQuery.append(operation).append(space);                // "SELECT" + " "
             if (this.targets.isEmpty()) {
                 selectQuery.append(all).append(space);                  // "*" + " "
@@ -39,24 +41,36 @@ public class SelectQuery implements Query,QueryLanguage{
                 if(this.targets.size() == 1) {
                     selectQuery.append(targets.get(0)).append(space);   // "targetColumn" + " "
                 } else {
-                    for (int i=0;i<targets.size()-1;i++) {              // "targetColumn" + "," + ...  "targetColumn" + ","
-                        selectQuery.append(targets.get(i)).append(comma);
+                    for (String target : targets) {
+                        if(!first) {
+                            selectQuery.append(comma).append(space);    // "," + " "
+                        }
+                        selectQuery.append(target);                     // "--targetColumn--"
                     }
-                    selectQuery.append(targets.get(targets.size()-1)).append(space);    // last "targetColumn" + " "
                 }
             }
 
-            selectQuery.append(from).append(space);                                 // "FROM"
+            selectQuery.append(space).append(from).append(space);                     // "FROM"
+
             if (this.tables.isEmpty()) {
                 throw new SQLSyntaxErrorException("No tables set in Query.");
             } else {
                 if(this.tables.size() == 1) {
                     selectQuery.append(tables.get(0)).append(space);   // "targetColumn" + " "
                 } else {
+
+
+
+
                     for (int i=0;i<tables.size()-1;i++) {    // "targetColumn" + "," + ...  "targetColumn" + ","
                         selectQuery.append(tables.get(i)).append(comma);
                     }
                     selectQuery.append(tables.get(tables.size()-1)).append(space);    // last "targetColumn" + " "
+
+
+
+
+
                 }
             }
 

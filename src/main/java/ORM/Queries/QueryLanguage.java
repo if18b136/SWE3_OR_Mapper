@@ -22,4 +22,5 @@ public interface QueryLanguage {
     String unique = "UNIQUE";
     String notNull = "NOT NULL";
     String reference = "REFERENCES";
+    char question = '?';
 }

@@ -14,6 +14,8 @@ public class Entity {
     private Field[] primaryFields;
     private Field[] internalFields;
     private Field[] externalFields;
+    private Class<?> superClass;
+    private Class<?>[] subClasses;
 
     /**<h2>Entity Constructor from class</h2>
      * calls initEntity to initialize the Entity object
@@ -40,32 +42,40 @@ public class Entity {
         List<Field> primaryFieldsList = new ArrayList<>();
         List<Field> internalFieldsList = new ArrayList<>();
         List<Field> externalFieldsList = new ArrayList<>();
+
         java.lang.reflect.Field[] fields = type.getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
             fieldsList.add(ormField);
-            if(ormField.isPrimary()) {
-                primaryFieldsList.add(ormField);
-            }
-            if(ormField.isForeign()) {
-                ormField.setForeignColumn(MetaData.getForeignColumn(field));
-                ormField.setForeignTable(MetaData.getForeignTable(field));
-                externalFieldsList.add(ormField);
-            } else {
-                internalFieldsList.add(ormField);
+            //TODO own array for fields that are neither internal nor external?
+            if(!ormField.ignore()) { // the ignore check handles fields like Teacher.Courses, which is not a entry in t_teacher, but a fillable field in teacher Object
+                if(ormField.isPrimary() && !primaryFieldsList.contains(ormField)) {
+                    primaryFieldsList.add(ormField);
+                }
+                if(ormField.isForeign()) {
+                    ormField.setForeignColumn(MetaData.getForeignColumn(field));
+                    ormField.setForeignTable(MetaData.getForeignTable(field));
+                    externalFieldsList.add(ormField);
+                } else {
+                    internalFieldsList.add(ormField);
+                }
             }
         }
+
         this.fields = fieldsList.toArray(new Field[0]);
         this.primaryFields = primaryFieldsList.toArray(new Field[0]);
         this.internalFields = internalFieldsList.toArray(new Field[0]);
         this.externalFields = externalFieldsList.toArray(new Field[0]);
+
+        // get superclass without need of extra annotating them
+        this.superClass = type.getSuperclass().equals(Object.class) ? null : type.getSuperclass();
     }
 
-    public String getTableName() { return tableName; }
-    public Field[] getFields() { return fields; }
-    public Class<?> getEntityClass() { return entityClass; }
-    public Field[] getInternalFields() { return internalFields; }
-    public Field[] getPrimaryFields() { return primaryFields; }
-    public Field[] getExternalFields() { return externalFields; }
-
+    public String getTableName() { return this.tableName; }
+    public Field[] getFields() { return this.fields; }
+    public Class<?> getEntityClass() { return this.entityClass; }
+    public Field[] getInternalFields() { return this.internalFields; }
+    public Field[] getPrimaryFields() { return this.primaryFields; }
+    public Field[] getExternalFields() { return this.externalFields; }
+    public Class<?> getSuperClass() { return this.superClass; }
 }

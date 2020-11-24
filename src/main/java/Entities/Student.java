@@ -6,14 +6,11 @@ import ORM.Annotations.Table;
 
 import java.util.List;
 
-@Table(name = "t_student", superclass = "t_person")
+@Table(name = "t_student")
 public class Student extends Person{
-    @Column(primary = true, autoIncrement = true)
+    @Column(primary = true)
+    @ForeignKey(table = "t_person", column = "id")
     private int id;
-
-    @Column(nullable = false)
-    @ForeignKey(table = "t_person", foreignColumn = "id")
-    private int personId;
 
     @Column
     @ForeignKey(table = "t_student_courses", column = "student_id", foreignColumn = "course_id")
@@ -21,14 +18,12 @@ public class Student extends Person{
 
     public Student() {}
 
-    public Student(int id, int personId, List<Course> courses) {
+    public Student(int id) {
         this.id = id;
-        this.personId = personId;
-        this.courses = courses;
     }
 
-    public Student(int personId, List<Course> courses) {
-        this.personId = personId;
+    public Student(int id, List<Course> courses) {
+        this.id = id;
         this.courses = courses;
     }
 
@@ -37,4 +32,11 @@ public class Student extends Person{
             this.courses.add(course);
         }
     }
+
+    public void removeCourse(Course course) {
+        if (!this.courses.contains(course)) {
+            this.courses.remove(course);
+        }
+    }
+
 }

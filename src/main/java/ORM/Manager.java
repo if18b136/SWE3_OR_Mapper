@@ -76,9 +76,8 @@ public final class Manager {
     }
 
     //TODO heavy refactoring to prevent sql injection (don't directly insert the pks as values) and overall better readability
-    public static Object createObject(Class clazz, Object... pks)  {
+    public static Object createObject(Class<?> clazz, Object... pks)  {
         try {
-            System.out.println(clazz.getName());
             Entity entity = Entities.get(clazz);    // getEntity needs an object as argument and so does not work here
 
             SelectQuery select = new SelectQuery();
@@ -87,6 +86,15 @@ public final class Manager {
             for(Field field : entity.getInternalFields()) {
                 targets.add(field.getColumnName());
             }
+            //TODO superclass targets
+            if(entity.getSuperClass() != null) {
+                Entity superEntity = Entities.get(entity.getSuperClass());
+                select.addTables(superEntity.getTableName());
+                for(Field field : superEntity.getInternalFields()) {
+                    targets.add(field.getColumnName());
+                }
+            }
+
             select.addTargets(targets.toArray(new String[0]));
             int i = 0;
             for(Field field : entity.getPrimaryFields()) {
@@ -115,10 +123,10 @@ public final class Manager {
         return null;
     }
 
+    //TODO - 24.11.2020 - Compare with other method for single return value handling from database
     private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
         if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
             T t = type.getDeclaredConstructor().newInstance();
-            System.out.println(res.getMetaData().getColumnCount());
             for(java.lang.reflect.Field field : type.getDeclaredFields()) {
                 field.setAccessible(true);
                 Object value = res.getObject(field.getName());
@@ -183,7 +191,7 @@ public final class Manager {
     public static void createTable(Object object) {
         try {
             Entity entity = getEntity(object);
-            System.out.println(new CreateTableQuery().buildQuery(entity));
+            managerLogger.info(new CreateTableQuery().buildQuery(entity));
             PreparedStatement initStmt = db.prepareStatement(new CreateTableQuery().buildQuery(entity));
             initStmt.execute();
         } catch (SQLException sql) {
@@ -194,7 +202,10 @@ public final class Manager {
     public static void save(Object object) {
         try{
             Entity entity = getEntity(object);
-            PreparedStatement insertStmt = db.prepareStatement(new InsertQuery().buildQuery(object,entity));
+            InsertQuery insertQuery = new InsertQuery();
+            insertQuery.buildQuery(object, entity);
+            managerLogger.info(insertQuery.getQuery());
+            PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
             managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + ".");
         } catch (SQLException sql) {
@@ -204,12 +215,12 @@ public final class Manager {
 
     public static void saveOrUpdate(Object object) {
         try{
-            Entity entity = new Entity(object); // TODO change to object.getEntity method?
+            Entity entity = getEntity(object);
             InsertQuery insertQuery = new InsertQuery();
             insertQuery.enableUpsert();
-            String insertString = insertQuery.buildQuery(object, entity);
-            managerLogger.info("Upsert: " + insertString);
-            PreparedStatement insertStmt = db.prepareStatement(insertString);
+            insertQuery.buildQuery(object, entity);
+            managerLogger.info(insertQuery.getQuery());
+            PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
             managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + " or the entry has been updated.");
         } catch (SQLException sql) {

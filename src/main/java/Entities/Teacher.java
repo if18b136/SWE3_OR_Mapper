@@ -6,7 +6,7 @@ import ORM.Annotations.Table;
 
 import java.util.List;
 
-@Table(name = "t_teacher", superclass = "t_person")
+@Table(name = "t_teacher")
 public class Teacher extends Person{
     @Column(primary = true)
     private int id;
@@ -15,7 +15,7 @@ public class Teacher extends Person{
     @ForeignKey(table = "t_person", column = "id")
     private int personId;
 
-    @Column
+    @Column(ignore = true)
     private List<Course> teachingCourses;
 
     public Teacher() {}
@@ -49,4 +49,5 @@ public class Teacher extends Person{
     }
 
     public List<Course> getTeachingCourses() { return this.teachingCourses; }
+    public int getPersonId() { return this.personId; }
 }

@@ -1,12 +1,17 @@
 package ORM.Queries;
 
+import Database.DatabaseConnection;
 import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Manager;
+import ORM.MetaData;
 import ORM.Parser;
 
 import java.security.InvalidParameterException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,6 +21,7 @@ public class InsertQuery implements QueryLanguage {
     private final String operation = "INSERT into";
     String query;
     boolean upsert = false;
+    private PreparedStatement stmt;
 
     //TODO needs to be documented as feature for user
     public void enableUpsert() {this.upsert = true;}
@@ -23,53 +29,51 @@ public class InsertQuery implements QueryLanguage {
 
     // Entity could be created to only need one argument,
     // but Manager handles entity creation so we would have to call Manager one extra time from here which is not resource friendly
-    public String buildQuery(Object object, Entity entity) {
+    public void buildQuery(Object object, Entity entity) {
         try{
             if (entity.getTableName().isEmpty()) {
                 throw new InvalidParameterException("Entity :" + entity.toString() + " has no table name");
             }
             StringBuilder insertQuery = new StringBuilder();
-            boolean first= true;
             insertQuery.append(operation).append(space);                    // "INSERT into" + " "
-
             insertQuery.append(entity.getTableName()).append(space);        // "Table Name" + " "
+
             StringBuilder columns = new StringBuilder();
             StringBuilder columnValues = new StringBuilder();
             columns.append(brOpen);                                         // "("
             columnValues.append(values).append(space).append(brOpen);       // "VALUES" + " " + "("
 
+            List<Object> values = new ArrayList<>();
+            boolean first = true;
             Field[] fields = entity.getFields();
-            for(int i = 0; i < fields.length; i++) {
-                if((!fields[i].isAutoIncrement() || upsert) && fields[i].getValue(object) != null) { // with upsert check here every object that gets upserted  NEEDS a set PK!!!!
-                    if(!first) {
-                        columns.append(comma).append(space);
-                        columnValues.append(comma).append(space);
-                    } else {
+
+            for ( Field field : fields) {
+                if(!field.isAutoIncrement()) { //AI does not need manual insertion - could be expanded with set value check
+                    if(first) {
                         first = false;
+                    } else {
+                        if(field.getValue(object) != null) {
+                            columns.append(comma).append(space);
+                            columnValues.append(comma).append(space);
+                        }
                     }
 
-                    columns.append(fields[i].getColumnName());      // "--column Name--"
-                    if (fields[i].isForeign()) {
-                        String foreignColumnName = fields[i].getForeignColumn();
-                        Entity foreignEntity = Manager.isCached(fields[i].getFieldType());
-                        if (foreignEntity != null) {
-                            // means we have a foreignKey custom class
-                            Class<?> foreignClass = foreignEntity.getEntityClass();
-                            try {
-                                java.lang.reflect.Field foreignField = foreignClass.getDeclaredField(foreignColumnName);
-                                foreignField.setAccessible(true);
-                                columnValues.append(quotation).append(foreignField.get(fields[i].getValue(object))).append(quotation);      // "--column value--"
-                            } catch (NoSuchFieldException | IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation);      // "--column value--"
-                        }
-                    } else {
-                        columnValues.append(quotation).append(fields[i].getValue(object)).append(quotation);      // "--column value--"
+                    if (field.isForeign()) {                    // get the type and value of the foreign object
+                        if (field.getValue(object) != null) {
+                            columns.append(field.getColumnName());      // append col Name
+                            columnValues.append(question);              // add anti-SQL-Injection question mark
+                            values.add(MetaData.toColumnType(field,field.getValue(object)));
+                        } else if (!field.isNullable()) {
+                            throw new NullPointerException(object + ": non-nullable Field " + field.getColumnName() + " is not set.");
+                        } // else { do nothing because then not inserting a value in the column is valid }
+                    } else {    // we can be sure that all internal fields will be non-custom types so the extra transform is not needed here (even for localDate to SQL Date)
+                        columns.append(field.getColumnName());      // append col Name
+                        columnValues.append(question);              // add anti-SQL-Injection question mark
+                        values.add(field.getValue(object));         // add value to object array from which it can be inserted into the prepared statement later
                     }
                 }
             }
+
             columns.append(brClosed).append(space);
             columnValues.append(brClosed);
 
@@ -95,11 +99,21 @@ public class InsertQuery implements QueryLanguage {
 
             insertQuery.append(semicolon);
             this.query = insertQuery.toString();
-        } catch (InvalidParameterException ipe) {
+
+            Connection db = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement stmt = db.prepareStatement(insertQuery.toString());
+            int i = 1;
+            for (Object obj : values) {
+                stmt.setObject(i++,obj);
+            }
+            this.stmt = stmt;
+
+        } catch (InvalidParameterException | SQLException ipe) {
             ipe.printStackTrace();
         }
-        System.out.println(this.query);
-        return query;
     }
+
+    public PreparedStatement getStmt() { return this.stmt; }
+    public String getQuery() { return this.query; }
 
 }

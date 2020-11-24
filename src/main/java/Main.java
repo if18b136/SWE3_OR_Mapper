@@ -1,6 +1,7 @@
 import Database.DatabaseConnection;
 import Entities.Course;
 import Entities.Person;
+import Entities.Student;
 import Entities.Teacher;
 import ORM.Manager;
 
@@ -20,6 +21,8 @@ public class Main {
             dropTable.execute();
             dropTable = db.prepareStatement("DROP TABLE if exists t_teacher");
             dropTable.execute();
+            dropTable = db.prepareStatement("DROP TABLE if exists t_student");
+            dropTable.execute();
             dropTable = db.prepareStatement("DROP TABLE if exists t_person");
             dropTable.execute();
 
@@ -30,16 +33,27 @@ public class Main {
             timmy.setFirstName("Thomas");
             Manager.saveOrUpdate(timmy);
 
-            Person thomas = Manager.getObject(Person.class,1);
-            System.out.println(thomas.getFirstName());
+            Student std = new Student(1);
+            Manager.createTable(std);
+            Manager.save(std);
 
-            Teacher thomasTeacher = new Teacher(1,1);
-            Manager.createTable(thomasTeacher);
-            Manager.save(thomasTeacher);
+//            Person thomas = Manager.getObject(Person.class,1);
+//            System.out.println(thomas.getFirstName());
 
-            Course math = new Course(1,"Applied Mathematics",4.5, thomasTeacher);
-            Manager.createTable(math);
-            Manager.save(math);
+//            Teacher thomasTeacher = new Teacher(1,1);
+//            Manager.createTable(thomasTeacher);
+//            Manager.save(thomasTeacher);
+
+//            Course math = new Course(1,"Applied Mathematics",4.5, thomasTeacher);
+//            Manager.createTable(math);
+//            Manager.save(math);
+
+//            Person getThomas = Manager.getObject(Person.class,1);
+//            System.out.println("Got Person from SQl. " + getThomas.getId() + " => " + getThomas.getFirstName());
+
+//            //TODO - now get Person data when calling for Teacher
+//            Teacher getTeacher  = Manager.getObject(Teacher.class, 1);
+//            System.out.println(getTeacher.getId());
 
 //            Teacher timmyTeacher = new Teacher(1);
 //

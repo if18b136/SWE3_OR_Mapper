@@ -28,16 +28,6 @@ public class UnitTests {
     }
 
     @Test
-    public void MetaDataExtractionTest() throws IllegalAccessException {
-        Person timmy = new Person(1,"Timmy","Turner", LocalDate.now());
-        List<MetaData.fieldData> timmyObject = MetaData.objectMetaData(timmy);
-        for( MetaData.fieldData field : timmyObject) {
-            assertNotNull(field.type);
-            assertNotNull(field.value);
-        }
-    }
-
-    @Test
     public void selectQueryTest() {
         SelectQuery selectQuery = new SelectQuery();
         selectQuery.addTargets("birthdate");
