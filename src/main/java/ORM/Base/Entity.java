@@ -46,9 +46,9 @@ public class Entity {
         java.lang.reflect.Field[] fields = type.getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
-            fieldsList.add(ormField);
-            //TODO own array for fields that are neither internal nor external?
             if(!ormField.ignore()) { // the ignore check handles fields like Teacher.Courses, which is not a entry in t_teacher, but a fillable field in teacher Object
+                fieldsList.add(ormField);
+                //TODO own array for fields that are neither internal nor external (=ignored)?
                 if(ormField.isPrimary() && !primaryFieldsList.contains(ormField)) {
                     primaryFieldsList.add(ormField);
                 }

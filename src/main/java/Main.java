@@ -37,12 +37,13 @@ public class Main {
             Manager.createTable(std);
             Manager.save(std);
 
+            Teacher thomasTeacher = new Teacher(1);
+            Manager.createTable(thomasTeacher);
+            Manager.save(thomasTeacher);
+            
 //            Person thomas = Manager.getObject(Person.class,1);
 //            System.out.println(thomas.getFirstName());
 
-//            Teacher thomasTeacher = new Teacher(1,1);
-//            Manager.createTable(thomasTeacher);
-//            Manager.save(thomasTeacher);
 
 //            Course math = new Course(1,"Applied Mathematics",4.5, thomasTeacher);
 //            Manager.createTable(math);

@@ -9,36 +9,19 @@ import java.util.List;
 @Table(name = "t_teacher")
 public class Teacher extends Person{
     @Column(primary = true)
-    private int id;
-
-    @Column(nullable = false)
     @ForeignKey(table = "t_person", column = "id")
-    private int personId;
+    private int id;
 
     @Column(ignore = true)
     private List<Course> teachingCourses;
 
     public Teacher() {}
-
-    public Teacher(int id, int personId, List<Course> teachingCourses) {
+    public Teacher(int id) { this.id = id; }
+    public Teacher(int id, List<Course> teachingCourses) {
         this.id = id;
-        this.personId = personId;
         this.teachingCourses = teachingCourses;
     }
 
-    public Teacher(int id, int personId) {
-        this.id = id;
-        this.personId = personId;
-    }
-
-    public Teacher(int personId, List<Course> teachingCourses) {
-        this.personId = personId;
-        this.teachingCourses = teachingCourses;
-    }
-
-    public Teacher(int personId) {
-        this.personId = personId;
-    }
 
     //TODO - Teacher: add getter and setter if needed
 
@@ -49,5 +32,4 @@ public class Teacher extends Person{
     }
 
     public List<Course> getTeachingCourses() { return this.teachingCourses; }
-    public int getPersonId() { return this.personId; }
 }

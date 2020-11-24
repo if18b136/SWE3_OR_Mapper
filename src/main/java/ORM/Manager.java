@@ -207,7 +207,6 @@ public final class Manager {
             managerLogger.info(insertQuery.getQuery());
             PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
-            managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + ".");
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }
@@ -222,7 +221,6 @@ public final class Manager {
             managerLogger.info(insertQuery.getQuery());
             PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
-            managerLogger.info("A new Entry has been inserted into " + entity.getTableName() + " or the entry has been updated.");
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }
