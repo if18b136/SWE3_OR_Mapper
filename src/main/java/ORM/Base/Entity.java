@@ -68,7 +68,10 @@ public class Entity {
         this.externalFields = externalFieldsList.toArray(new Field[0]);
 
         // get superclass without need of extra annotating them
-        this.superClass = type.getSuperclass().equals(Object.class) ? null : type.getSuperclass();
+        System.out.println(type + " <-- " + type.getSuperclass());
+//        this.superClass = type.getSuperclass().equals(Class.class) ? Object.class : type.getSuperclass();
+//        this.superClass = type.getSuperclass().equals(Object.class) ? Object.class : type.getSuperclass();
+        this.superClass = type.getSuperclass();
     }
 
     public String getTableName() { return this.tableName; }

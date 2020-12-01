@@ -29,6 +29,7 @@ public class Main {
             Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             Manager.createTable(timmy);
             Manager.save(timmy);
+            Person getTimmy = Manager.getObject(Person.class, 1);
 
             timmy.setFirstName("Thomas");
             Manager.saveOrUpdate(timmy);
@@ -40,7 +41,11 @@ public class Main {
             Teacher thomasTeacher = new Teacher(1);
             Manager.createTable(thomasTeacher);
             Manager.save(thomasTeacher);
-            
+
+            Teacher getThomas = Manager.getObject(Teacher.class, 1);
+            System.out.println(getThomas.getFirstName());
+
+
 //            Person thomas = Manager.getObject(Person.class,1);
 //            System.out.println(thomas.getFirstName());
 

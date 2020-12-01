@@ -1,6 +1,7 @@
 package ORM;
 
 import Database.DatabaseConnection;
+import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Queries.CreateTableQuery;
@@ -16,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public final class Manager {
 
    // this queries an entity of the object class for further use
    public static Entity getEntity(Object obj) {
-        Class<?> clazz = obj.getClass();
+        Class<?> clazz = ((obj instanceof Class) ? (Class<?>) obj : obj.getClass());
         if(Entities.containsKey(clazz)) {
             return Entities.get(clazz);
         }
@@ -81,27 +83,22 @@ public final class Manager {
             Entity entity = Entities.get(clazz);    // getEntity needs an object as argument and so does not work here
 
             SelectQuery select = new SelectQuery();
+            select.setEntity(entity);   // needed for primary keys if a join will be called.
             select.addTables(entity.getTableName());
             List<String> targets = new ArrayList<>();
             for(Field field : entity.getInternalFields()) {
                 targets.add(field.getColumnName());
             }
-            //TODO superclass targets
-            if(entity.getSuperClass() != null) {
-                Entity superEntity = Entities.get(entity.getSuperClass());
-                select.addTables(superEntity.getTableName());
-                for(Field field : superEntity.getInternalFields()) {
-                    targets.add(field.getColumnName());
-                }
-            }
+
+            addSuperClassTargets(select,targets,entity);
 
             select.addTargets(targets.toArray(new String[0]));
             int i = 0;
             for(Field field : entity.getPrimaryFields()) {
                 select.addCondition(field.getColumnName(),pks[i]);
             }
+
             select.buildQuery();
-            System.out.println(select.getQuery());
             PreparedStatement stmt = db.prepareStatement(select.getQuery());
             ResultSet res = stmt.executeQuery();
             Object rval = null;
@@ -123,21 +120,57 @@ public final class Manager {
         return null;
     }
 
-    //TODO - 24.11.2020 - Compare with other method for single return value handling from database
+//    //TODO - 24.11.2020 - Compare with other method for single return value handling from database
+//    private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+//        if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
+//            T t = type.getDeclaredConstructor().newInstance();
+//            for(java.lang.reflect.Field field : type.getDeclaredFields()) {
+//                field.setAccessible(true);
+//                if ( field.getAnnotation(Column.class) != null && !field.getAnnotation(Column.class).ignore()) {    //should now ignore fields
+//                    Object value = res.getObject(field.getName());
+//                    Class<?> clazz = field.getType();
+//                    if(clazz.isPrimitive()) {    //TODO check if own class does the same
+//                        Class<?> boxed = boxPrimitiveClass(clazz);
+//                        value = boxed.cast(value);
+//                    } else if(value.getClass() == Date.class) {  // TODO convert externally?
+//                        value = ((Date) value).toLocalDate();
+//                    }
+//                    field.set(t, value);
+//                }
+//            }
+//            return t;
+//        } else {
+//            //TODO handle something like "select 2 strings" here -> would need an array or list as return.
+//            if(res.getMetaData().getColumnCount() > 1) {
+//                for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
+//                    // do something multiple times here.
+//                }
+//                return null;
+//            } else {
+//                return (T) res.getObject(1);
+//            }
+//        }
+//    }
+
     private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        if(!type.isPrimitive() && /*!type.equals(String.class)*/ res.getMetaData().getColumnCount() > 1) {   //TODO make exclusion of non-custom objects more generic than this (date won't work either)
+        if(!type.isPrimitive() && res.getMetaData().getColumnCount() > 1) {
             T t = type.getDeclaredConstructor().newInstance();
-            for(java.lang.reflect.Field field : type.getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = res.getObject(field.getName());
-                Class<?> clazz = field.getType();
-                if(clazz.isPrimitive()) {    //TODO check if own class does the same
-                    Class<?> boxed = boxPrimitiveClass(clazz);
-                    value = boxed.cast(value);
-                } else if(value.getClass() == Date.class) {  // TODO convert externally?
-                    value = ((Date) value).toLocalDate();
+
+            Entity entity = getEntity(type);
+
+            for(Field field : getEntity(type).getPrimaryFields()) {
+                field.setValue(t, res.getObject(field.getColumnName()));
+            }
+
+            if(entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
+                Entity superEntity = getEntity(entity.getSuperClass());
+                for (Field field : superEntity.getFields()) {
+                    setFieldValue(res, t, field);
                 }
-                field.set(t, value);
+            }
+
+            for(Field field : getEntity(type).getFields()) {
+                setFieldValue(res, t, field);
             }
             return t;
         } else {
@@ -152,6 +185,21 @@ public final class Manager {
             }
         }
     }
+
+    private static <T> void setFieldValue(ResultSet res, T t, Field field) throws SQLException {
+        if(field.isPrimary() && !field.isForeign()) {
+            field.setValue(t, res.getObject(field.getColumnName()));
+        } else {
+            Object value;
+            if( field.isForeign()) {
+                value = MetaData.toFieldType(field,res.getObject(field.getEntity().getPrimaryFields()[0].getColumnName()));
+            } else {
+                value = MetaData.toFieldType(field,res.getObject(field.getColumnName()));
+            }
+            field.setValue(t, value);
+        }
+    }
+
 
     private static boolean isPrimitive(Class<?> type) {
         return (type == int.class ||
@@ -223,6 +271,31 @@ public final class Manager {
             insertStmt.executeUpdate();
         } catch (SQLException sql) {
             managerLogger.error(sql);
+        }
+    }
+
+    /** <h3>Inner Method addSuperClassTargets</h3>
+     * Helper Method for parent class variable fetching. Calls parent class entities recursively and adds their inner fields to target list.
+     * @param select    the current selectQuery
+     * @param targets   the selectQuery target field list
+     * @param entity    the current Entity
+     */
+    private static void addSuperClassTargets(SelectQuery select, List<String> targets, Entity entity) {
+        if(entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
+            System.out.println("Super class Name: " + entity.getSuperClass().getName());
+            Entity superEntity = Entities.get(entity.getSuperClass());
+            System.out.println("Super entity table name: "  + superEntity.getTableName());
+            select.addTables(superEntity.getTableName());
+            for (Field field : superEntity.getInternalFields()) {
+                String foreignColumn = superEntity.getTableName()+"."+field.getColumnName();    // easier than trying to get the correct table for each column in the selectQuery Builder
+                targets.add(foreignColumn);
+            }
+            if(Entities.get(entity.getSuperClass()) != null) {  // unfortunately getEntities ALWAYS returns a class (even if it needs to create a java.lang.class Class out of thin air without any help)
+                addSuperClassTargets(select, targets, Entities.get(entity.getSuperClass()));
+            }
+        }
+        else {
+            System.out.println("Base entity in addSuperClassTargets");
         }
     }
 }

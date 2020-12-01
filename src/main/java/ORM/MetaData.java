@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public final class MetaData {
     static final Logger metaDataLogger = LogManager.getLogger("MetaData");
@@ -140,6 +141,15 @@ public final class MetaData {
         }
         // TODO add boolean conversion if needed
 
+        return object;
+    }
+
+    public static Object toFieldType(ORM.Base.Field field, Object object) {
+        // TODO add other field type conversions
+        if (field.getFieldType().equals(LocalDate.class)) {
+            LocalDate date = LocalDate.parse(object.toString());
+            return date;
+        }
         return object;
     }
 }

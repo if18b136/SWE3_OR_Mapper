@@ -23,4 +23,6 @@ public interface QueryLanguage {
     String notNull = "NOT NULL";
     String reference = "REFERENCES";
     char question = '?';
+    String join = "JOIN";
+    String on = "ON";
 }

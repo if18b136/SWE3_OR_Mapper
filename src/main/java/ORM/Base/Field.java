@@ -71,6 +71,14 @@ public class Field {
         return null;
     }
 
+    public void setValue(Object object, Object value) {
+        try {
+            this.field.set(object,value);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getColumnName() { return this.columnName; }
 
     public boolean isPrimary() { return this.primary; }
