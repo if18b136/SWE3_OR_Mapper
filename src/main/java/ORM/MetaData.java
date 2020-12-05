@@ -7,15 +7,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+
 
 /**
  * <h2>static MetaData class</h2>
@@ -143,7 +138,7 @@ public final class MetaData {
             return MetaData.toColumnType(foreignField, foreignField.getValue(object));      //recursive call to get to the root and access a non-custom Object (eg. int instead of Teacher)
         }
         if (field.getFieldType().equals(LocalDate.class)) {     // the date class used in the framework
-            return (Date) field.getValue(object);               // says redundant here but completes the conversion nicely and other way round is absolutely necessary.
+            return field.getValue(object);
         }
         // TODO add boolean conversion if needed
 
@@ -153,8 +148,7 @@ public final class MetaData {
     public static Object toFieldType(ORM.Base.Field field, Object object) {
         // TODO add other field type conversions
         if (field.getFieldType().equals(LocalDate.class)) {
-            LocalDate date = LocalDate.parse(object.toString());
-            return date;
+            return LocalDate.parse(object.toString());
         }
         return object;
     }

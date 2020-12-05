@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class Cache {
     final static Logger cacheLogger = LogManager.getLogger("Cache");
-    private HashMap<Object, Object> cache;
+    private final HashMap<Object, Object> cache;
 
     /**
      * <h4>Cache Constructor</h4>

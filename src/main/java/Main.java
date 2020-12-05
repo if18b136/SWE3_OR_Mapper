@@ -1,5 +1,5 @@
 import Database.DatabaseConnection;
-import Entities.Course;
+
 import Entities.Person;
 import Entities.Student;
 import Entities.Teacher;
@@ -45,8 +45,8 @@ public class Main {
             System.out.println(getThomas.getFirstName());
 
             Teacher getThomasFromCache =  Manager.get(Teacher.class, 1);
-            System.out.println(getThomasFromCache.getFirstName());
-            
+            System.out.println(getThomasFromCache.getBirthDate());
+
         } catch (Exception e) {
             mainLogger.error(e);
             e.printStackTrace();

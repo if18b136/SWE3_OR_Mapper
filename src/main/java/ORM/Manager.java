@@ -25,7 +25,7 @@ import java.util.List;
 public final class Manager {
     final static Logger managerLogger = LogManager.getLogger("Manager");
     protected static HashMap<Class<?>, Entity> entitiesCache = new HashMap<>();
-    private static HashMap<Class<?>, Cache> objectCache = new HashMap<>();
+    private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
     private static Connection db;
 
     // Exception handling for static database connection field.
@@ -210,6 +210,7 @@ public final class Manager {
             if(res.getMetaData().getColumnCount() > 1) {
                 for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
                     // do something multiple times here.
+                    System.out.println("I love you.");
                 }
                 return null;
             } else {

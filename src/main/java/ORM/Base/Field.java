@@ -1,16 +1,8 @@
 package ORM.Base;
 
-import ORM.Manager;
 import ORM.MetaData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.time.LocalDate;
-import java.util.List;
 
 /**
  * <h2>Field class </h2>
@@ -55,8 +47,8 @@ public class Field {
     public void setForeignTable(String foreignTable) { this.foreignTable = foreignTable; }
     public String getForeignTable() { return foreignTable; }
 
-    public Class getFieldType() { return this._fieldType; }
-    public void setFieldType(Class fieldType) { this._fieldType = fieldType; }
+    public Class<?> getFieldType() { return this._fieldType; }
+    public void setFieldType(Class<?> fieldType) { this._fieldType = fieldType; }
 
     // https://stackoverflow.com/questions/2989560/how-to-get-the-fields-in-an-object-via-reflection
     // Alternative is to call for the getter Methods but that would need a little bit more refactoring

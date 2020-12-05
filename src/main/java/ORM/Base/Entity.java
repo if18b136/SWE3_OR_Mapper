@@ -1,10 +1,8 @@
 package ORM.Base;
 
-import ORM.Annotations.Table;
 import ORM.MetaData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Entity {
@@ -15,7 +13,6 @@ public class Entity {
     private Field[] internalFields;
     private Field[] externalFields;
     private Class<?> superClass;
-    private Class<?>[] subClasses;
 
     /**
      * <h4>Entity Constructor from class</h4>
