@@ -1,5 +1,8 @@
 package ORM.Queries;
 
+/**
+ * generic interface for sql queries.
+ */
 public interface Query {
     //TODO add table joins
 

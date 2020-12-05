@@ -6,6 +6,10 @@ import java.util.*;
 
 
 //TODO change string varargs to generic varargs for easier use
+
+/**
+ * SQL query class for select statements.
+ */
 public class SelectQuery implements Query,QueryLanguage{
     private final String operation = "SELECT";
     List<String> targets = new ArrayList<>();

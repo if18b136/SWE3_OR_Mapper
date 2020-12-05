@@ -6,6 +6,9 @@ import ORM.Annotations.Table;
 
 import java.util.List;
 
+/**
+ * Custom teacher class for ORM framework testing.
+ */
 @Table(name = "t_teacher")
 public class Teacher extends Person{
     @Column(primary = true)

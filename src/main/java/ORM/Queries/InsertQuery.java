@@ -1,24 +1,22 @@
 package ORM.Queries;
 
 import Database.DatabaseConnection;
-import ORM.Annotations.Column;
 import ORM.Base.Entity;
 import ORM.Base.Field;
-import ORM.Manager;
 import ORM.MetaData;
-import ORM.Parser;
 
 import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Sql query class for insert queries.
+ */
 public class InsertQuery implements QueryLanguage {
-    private final String operation = "INSERT into";
+    protected final String operation = "INSERT into";
     String query;
     boolean upsert = false;
     private PreparedStatement stmt;

@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Singleton class for database connection data config loading.
+ */
 public class Config {
     final Logger configLogger = LogManager.getLogger("Config");
     private Properties properties = new Properties();

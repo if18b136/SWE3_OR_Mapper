@@ -1,5 +1,9 @@
 package ORM.Queries;
 
+/**
+ * Helper interface for various sql query language.
+ * Implemented in all query classes to circumvent the need to append strings
+ */
 public interface QueryLanguage {
     char space = ' ';
     char all = '*';

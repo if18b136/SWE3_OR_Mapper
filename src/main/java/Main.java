@@ -12,8 +12,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 
+/**
+ * @author Maximilian Rotter
+ * @version 0.something
+ * <h2>Main class</h2>
+ * executes functionality
+ */
 public class Main {
+    /**
+     * Logger instance for main class.
+     */
     static final Logger mainLogger = LogManager.getLogger("Main Logger");
+
+    /**
+     * Runnable main class for program start.
+     * @param args  Program start input arguments.
+     */
     public static void main(String[] args) {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test

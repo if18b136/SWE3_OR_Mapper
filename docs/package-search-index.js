@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"Database"},{"l":"Entities"},{"l":"ORM"},{"l":"ORM.Annotations"},{"l":"ORM.Base"},{"l":"ORM.Queries"},{"l":"Service"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"Database"},{"l":"ORM"},{"l":"ORM.Annotations"},{"l":"ORM.Base"},{"l":"ORM.Queries"},{"l":"Service"}];updateSearchResults();

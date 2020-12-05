@@ -6,11 +6,13 @@ import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Manager;
 import ORM.MetaData;
-import ORM.Parser;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+/**
+ * SQL query class for create table operations.
+ */
 public class CreateTableQuery implements QueryLanguage {
     private final String operation = "CREATE TABLE";
     String query;
@@ -43,15 +45,15 @@ public class CreateTableQuery implements QueryLanguage {
                                 Class<?> foreignClass = foreignEntity.getEntityClass();
                                 try {
                                     java.lang.reflect.Field foreignField = foreignClass.getDeclaredField(foreignColumnName);
-                                    createTable.append(Parser.parseType(foreignField.getType().getName(),((Column) annotation).length()));
+                                    createTable.append(MetaData.parseType(foreignField.getType().getName(),((Column) annotation).length()));
                                 } catch (NoSuchFieldException e) {
                                     e.printStackTrace();
                                 }
                             } else {    // Set to foreign key but is not a custom class - means user better made sure to assign the same type to both fields
-                                createTable.append(Parser.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                                createTable.append(MetaData.parseType(field.getField().getType().getName(),((Column) annotation).length()));
                             }
                         } else {
-                            createTable.append(Parser.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                            createTable.append(MetaData.parseType(field.getField().getType().getName(),((Column) annotation).length()));
                         }
 
                         if(((Column) annotation).primary()) { createTable.append(space).append(primary); }

@@ -4,6 +4,9 @@ import ORM.Annotations.Column;
 import ORM.Annotations.Table;
 import java.time.LocalDate;
 
+/**
+ * Person test class for ORM framework.
+ */
 @Table(name = "t_person", subclasses = {Student.class,Teacher.class})
 public class Person {
     @Column(primary = true/*,autoIncrement = true*/) // TODO - get autoIncrementation done - currently does not work with upsert because of automatic AutoIncrement flag that ALWAYS ignores the entry, even in upsert

@@ -4,18 +4,36 @@ import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
 import ORM.Annotations.Table;
 
+/**
+ * Custom course class for ORM framework testing.
+ */
 @Table(name = "t_course")
 public class Course {
+    /**
+     * Database column "id".
+     */
     @Column(primary = true)
     private int id;
+    /**
+     * Database column "courseName".
+     */
     @Column(nullable = false, length = 50)
     private String courseName;
+    /**
+     * Database column "ects".
+     */
     @Column(nullable = false)
     private Double ects;
+    /**
+     * Database column foreign key "teacher_id".
+     */
     @Column(nullable = false)
     @ForeignKey(table = "t_teacher", column = "id")
     private Teacher teacher;
 
+    /**
+     * Empty constructor for course class.
+     */
     public Course() {}
 
     public Course(int id, String courseName, Double ects, Teacher teacher) {

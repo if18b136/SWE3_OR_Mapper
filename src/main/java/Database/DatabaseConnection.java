@@ -5,18 +5,26 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * Singleton implementation of the database connection.
+ * currently receives login data from config file in plain text.
+ */
 public class DatabaseConnection {
+    /**
+     * Database connection logger.
+     */
     final static Logger DBConLogger = LogManager.getLogger("Database Connection");
+    /**
+     * Static database Connection object.
+     */
     private static DatabaseConnection jdbc;
+    /**
+     * private database connection.
+     */
     private Connection con;
-    private String url = "";
-    private String username = "";
-    private String password = "";
 
-    // TODO - DBConnection as utility class perhaps?
     /**
      * Static Singleton initialisation.
      * The DBConnection is a Singleton that does not need to be initialized again for every call.
@@ -27,10 +35,11 @@ public class DatabaseConnection {
     private DatabaseConnection() throws SQLException {
         try {
             Class.forName(Config.getInstance().getProperties().getProperty("driver"));
-            this.url = Config.getInstance().getProperties().getProperty("url");
-            this.username = Config.getInstance().getProperties().getProperty("username");
-            this.password = Config.getInstance().getProperties().getProperty("password");
-            this.con = DriverManager.getConnection(url, username, password);
+
+            this.con = DriverManager.getConnection(
+                    Config.getInstance().getProperties().getProperty("url"),
+                    Config.getInstance().getProperties().getProperty("username"),
+                    Config.getInstance().getProperties().getProperty("password"));
             DBConLogger.info("Database initialised.");
         } catch (ClassNotFoundException cnf) {
             DBConLogger.error("Database Connection Creation Failed : " + cnf.getMessage());
@@ -38,7 +47,7 @@ public class DatabaseConnection {
     }
 
     /**
-     * Function to call the connection.
+     * Public connection call.
      *
      * @return the active Database Connection object
      */
@@ -47,6 +56,7 @@ public class DatabaseConnection {
     }
 
     /**
+     * Race condition handler for threading.
      * Synchronizing the whole class creates huge thread overhead,
      * because only one thread can access the getInstance at a time
      * By making a second instance check, which we synchronize, we minimize that overhead
@@ -68,5 +78,4 @@ public class DatabaseConnection {
         }
         return jdbc;
     }
-
 }
