@@ -152,4 +152,20 @@ public final class MetaData {
         }
         return object;
     }
+
+    //TODO retire after refactoring - bad way to convert because every single var needs an own conversion and special case handling for extras.
+    public static String parseType(String type, int length) {
+        try {
+            return switch (type) {
+                case "int" -> "int";
+                case "java.lang.String" -> "varchar(" + length + ")";
+                case "java.lang.Double" -> "double";
+                case "java.time.LocalDate" -> "date";
+                default -> throw new Exception("Exception while parsing type to dB type - type not recognized. " + type);
+            };
+        } catch (Exception e) {
+            metaDataLogger.error(e);
+        }
+        return null;    // should not be returned because of default in switch case - maybe refactor to Exception method throw instead of try/catch
+    }
 }
