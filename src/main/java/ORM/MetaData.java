@@ -17,6 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * <h2>static MetaData class</h2>
+ * class for all kinds of metadata extraction, handling, manipulation, etc... .
+ */
 public final class MetaData {
     static final Logger metaDataLogger = LogManager.getLogger("MetaData");
 
@@ -114,7 +118,8 @@ public final class MetaData {
         return null;
     }
 
-    /**<h2>Method buildTableName</h2>
+    /**
+     * <h4>Method buildTableName</h4>
      * Little helper function to get normed table names.
      * @param name Simple name of class without @Table Annotation or empty tableName
      * @return String construct of "t_" + class name in lower case.
@@ -124,7 +129,8 @@ public final class MetaData {
     }
 
 
-    /**<h2>Method toColumnType</h2>
+    /**
+     * <h4>Method toColumnType</h4>
      * traverses custom Classes for foreign key types and converts LocalDate to SQL.Date.
      * @param field the field as argument for entity access.
      * @param object the field as object for value returning.

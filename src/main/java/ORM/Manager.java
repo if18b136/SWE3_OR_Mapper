@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * <h2>static Manager class</h2>
  * The Manager class operates as a single Instance for legal checks and other operational tests
  */
 public final class Manager {
@@ -37,13 +38,13 @@ public final class Manager {
     }
 
     /**
-     * <h2>Manager Constructor</h2>
+     * <h4>Manager Constructor</h4>
      * Empty because of static non-instantiable class
      */
     private Manager() {}
 
     /**
-     * <h2>Method getEntity</h2>
+     * <h4>Method getEntity</h4>
      * Searches for already created class entity.
      * If nothing found, creates new entry in Entities hashMap.
      * @param obj   the Object which class (or itself if object is a class already) will be checked for an existing entry in Entities hashMap.
@@ -67,7 +68,7 @@ public final class Manager {
    }
 
     /**
-     * <h2>Method getIfCached</h2>
+     * <h4>Method getIfCached</h4>
      * Checks if an entity of a certain class is stored in the Entities hashMap.
      * @param type     the class which will be searched for.
      * @return          An existing entity or null if no entity found.
@@ -88,7 +89,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Method get</h2>
+     * <h4>Method get</h4>
      * Alternative to having to cast the generic object to a certain class.
      * Made into an extra method because of unchecked cast warning so it is up to the user which implementation they want to use.
      * @param type  the class, the object will be cast to
@@ -101,7 +102,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Method getObject</h2>
+     * <h4>Method getObject</h4>
      * Either finds the object in one of the caches or calls the create function below the make a new one.
      * @param type  the class of the wanted object
      * @param pks   the identifier primary key(s) object(s)
@@ -116,7 +117,7 @@ public final class Manager {
 
 
     /**
-     * <h2>Method createObject</h2>
+     * <h4>Method createObject</h4>
      * Will be called if object is not cached already.
      * Creates a new SelectQuery with the given arguments.
      * Makes a database call and inserts the returning values into a new object of the input class.
@@ -171,7 +172,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Wildcard Method createObject</h2>
+     * <h4>Wildcard Method createObject</h4>
      * Taken out of other createObject method for visibility.
      * @param res   Database call ResultSet
      * @param type  class for new object
@@ -218,7 +219,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Method setFieldValue</h2>
+     * <h4>Method setFieldValue</h4>
      * Function needed in two different places of T createObject methods so it got extracted to own method.
      * @param res   the ResultSet from getObject.
      * @param t     wildcard.
@@ -267,7 +268,7 @@ public final class Manager {
 */
 
     /**
-     * <h2>Method createTable</h2>
+     * <h4>Method createTable</h4>
      * can be used to create a new table in the database from a certain object.
      * @param object    the object from which fields a createTable query will be created and executed.
      */
@@ -283,7 +284,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Method save</h2>
+     * <h4>Method save</h4>
      * Insert query.
      * Inserts a new object into the database
      * @param object    the object of which it's data will be inserted into the database.
@@ -303,7 +304,7 @@ public final class Manager {
     }
 
     /**
-     * <h2>Method saveOrUpdate</h2>
+     * <h4>Method saveOrUpdate</h4>
      * Upsert query
      * Inserts a new object into the database or updates a database entry if already in database
      * @param object   the object of which it's data will be upserted in the database.
@@ -323,7 +324,7 @@ public final class Manager {
         }
     }
 
-    /** <h2>Inner Method addSuperClassTargets</h3>
+    /** <h4>Inner Method addSuperClassTargets</h4>
      * Helper Method for parent class variable fetching. Calls parent class entities recursively and adds their inner fields to target list.
      * @param select    the current selectQuery
      * @param targets   the selectQuery target field list

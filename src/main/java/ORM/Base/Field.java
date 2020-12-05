@@ -12,8 +12,9 @@ import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.List;
 
-/**<h1>Class </h1>
- *
+/**
+ * <h2>Field class </h2>
+ *  every database column is represented as a field.
  */
 public class Field {
     static final Logger fieldLogger = LogManager.getLogger("Field Logger");

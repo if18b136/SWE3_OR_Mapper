@@ -17,7 +17,8 @@ public class Entity {
     private Class<?> superClass;
     private Class<?>[] subClasses;
 
-    /**<h2>Entity Constructor from class</h2>
+    /**
+     * <h4>Entity Constructor from class</h4>
      * calls initEntity to initialize the Entity object
      * @param type Class from which the Entity will be from
      */
@@ -25,7 +26,8 @@ public class Entity {
         initEntity(type);
     }
 
-    /**<h2>Entity Constructor from object</h2>
+    /**
+     * <h4>Entity Constructor from object</h4>
      * calls initEntity to initialize the Entity object
      * @param obj Object from which the Entity will be from
      */
