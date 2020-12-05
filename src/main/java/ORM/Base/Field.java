@@ -90,6 +90,4 @@ public class Field {
     public boolean isMtoN () {
         return this.foreignTable.isEmpty();
     }
-
-    //TODO add sqlTypeParser Methods
 }
