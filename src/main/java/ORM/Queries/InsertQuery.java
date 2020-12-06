@@ -16,17 +16,45 @@ import java.util.List;
  * Sql query class for insert queries.
  */
 public class InsertQuery implements QueryLanguage {
+    /**
+     * INSERT into sql string.
+     */
     protected final String operation = "INSERT into";
+    /**
+     * Full insert sql query
+     */
     String query;
+    /**
+     * Boolean var for upsert.
+     */
     boolean upsert = false;
+    /**
+     * Prepared statement to prevent sql injection.
+     */
     private PreparedStatement stmt;
 
     //TODO needs to be documented as feature for user
+
+    /**
+     * Enables upsert part of buildQuery() function.
+     */
     public void enableUpsert() {this.upsert = true;}
+
+    /**
+     * Disables upsert part of buildQuery() function.
+     */
     public void disableUpsert() {this.upsert = false;}
 
-    // Entity could be created to only need one argument,
-    // but Manager handles entity creation so we would have to call Manager one extra time from here which is not resource friendly
+
+
+    /**
+     * Constructs a full insert or upsert query for a custom entity.
+     * Entity could be created to only need one argument,
+     * but Manager handles entity creation so we would have to call Manager one extra time from here which is not resource friendly
+     *
+     * @param object    Object containing variables for sql query.
+     * @param entity    Custom class entity.
+     */
     public void buildQuery(Object object, Entity entity) {
         try{
             if (entity.getTableName().isEmpty()) {
@@ -111,7 +139,18 @@ public class InsertQuery implements QueryLanguage {
         }
     }
 
+    /**
+     * Returns the sql query as prepared statement.
+     *
+     * @return  the sql query as prepared statement.
+     */
     public PreparedStatement getStmt() { return this.stmt; }
+
+    /**
+     * Returns the sql query as string.
+     *
+     * @return the sql query as string.
+     */
     public String getQuery() { return this.query; }
 
 }

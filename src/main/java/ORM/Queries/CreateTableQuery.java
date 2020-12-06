@@ -14,9 +14,21 @@ import java.util.List;
  * SQL query class for create table operations.
  */
 public class CreateTableQuery implements QueryLanguage {
+    /**
+     * CREATE TABLE sql string.
+     */
     private final String operation = "CREATE TABLE";
+    /**
+     * Full query.
+     */
     String query;
 
+    /**
+     * Constructs a table creation query from a entity object.
+     *
+     * @param entity    Source for the query.
+     * @return  A legal sql create table query.
+     */
     public String buildQuery(Entity entity) {
         StringBuilder createTable = new StringBuilder();
         createTable.append(operation).append(space).append(entity.getTableName()).append(space).append(brOpen);    // "CREATE TABLE" + " " + "--table Name--" + " " + "("

@@ -15,8 +15,7 @@ import java.time.LocalDate;
 /**
  * @author Maximilian Rotter
  * @version 0.something
- * <h2>Main class</h2>
- * executes functionality
+ * Main class that executes program with given arguments
  */
 public class Main {
     /**
@@ -26,6 +25,7 @@ public class Main {
 
     /**
      * Runnable main class for program start.
+     *
      * @param args  Program start input arguments.
      */
     public static void main(String[] args) {

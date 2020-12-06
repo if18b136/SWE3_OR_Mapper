@@ -19,13 +19,24 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * <h2>static Manager class</h2>
- * The Manager class operates as a single Instance for legal checks and other operational tests
+ * Manager class operates as a single Instance for legal checks and other operational tests
  */
 public final class Manager {
+    /**
+     * Manager Logger
+     */
     final static Logger managerLogger = LogManager.getLogger("Manager");
+    /**
+     * HashMap with cached entities objects, classified by their respective class object
+     */
     protected static HashMap<Class<?>, Entity> entitiesCache = new HashMap<>();
+    /**
+     * HashMap with caches for each custom entity class.
+     */
     private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
+    /**
+     * Database connection as static variable to make database calls faster.
+     */
     private static Connection db;
 
     // Exception handling for static database connection field.
@@ -38,15 +49,14 @@ public final class Manager {
     }
 
     /**
-     * <h4>Manager Constructor</h4>
-     * Empty because of static non-instantiable class
+     * Empty private constructor because of static non-instantiable class.
      */
     private Manager() {}
 
     /**
-     * <h4>Method getEntity</h4>
      * Searches for already created class entity.
      * If nothing found, creates new entry in Entities hashMap.
+     *
      * @param obj   the Object which class (or itself if object is a class already) will be checked for an existing entry in Entities hashMap.
      * @return  An entity of the input object.
      */
@@ -60,6 +70,12 @@ public final class Manager {
         return ent;
    }
 
+    /**
+     * Inserts a new entry into the cache.
+     * If no cache entry for the specific custom entity already exists, will also create one.
+     *
+     * @param object    Cached entity object.
+     */
    private static void insertCache (Object object) {
        if(!objectCache.containsKey(object.getClass())) {
            objectCache.put(object.getClass(),new Cache());
@@ -68,8 +84,8 @@ public final class Manager {
    }
 
     /**
-     * <h4>Method getIfCached</h4>
      * Checks if an entity of a certain class is stored in the Entities hashMap.
+     *
      * @param type     the class which will be searched for.
      * @return          An existing entity or null if no entity found.
      */
@@ -81,6 +97,13 @@ public final class Manager {
        return null;
    }
 
+    /**
+     * Checks if a table with the certain name exists in the database.
+     *
+     * @param tableName Database table name.
+     * @return  True if exists, else false.
+     * @throws SQLException if anything went wrong with the database connection.
+     */
     private static boolean tableExists(String tableName) throws SQLException {
         PreparedStatement table = db.prepareStatement("show tables like ?;");
         table.setString(1,tableName);
@@ -89,9 +112,9 @@ public final class Manager {
     }
 
     /**
-     * <h4>Method get</h4>
      * Alternative to having to cast the generic object to a certain class.
      * Made into an extra method because of unchecked cast warning so it is up to the user which implementation they want to use.
+     *
      * @param type  the class, the object will be cast to
      * @param pks   the primary key(s) as object(s)
      * @param <T>   generic wildcard
@@ -102,8 +125,8 @@ public final class Manager {
     }
 
     /**
-     * <h4>Method getObject</h4>
      * Either finds the object in one of the caches or calls the create function below the make a new one.
+     *
      * @param type  the class of the wanted object
      * @param pks   the identifier primary key(s) object(s)
      * @return      the object either from the cache or from the database.
@@ -117,10 +140,10 @@ public final class Manager {
 
 
     /**
-     * <h4>Method createObject</h4>
      * Will be called if object is not cached already.
      * Creates a new SelectQuery with the given arguments.
      * Makes a database call and inserts the returning values into a new object of the input class.
+     *
      * @param type  the class of which a new object will be created.
      * @param pks   the identifier primary key(s) object(s) from which the database select query will be constructed.
      * @return      A new object of type.Class with the stored database call values.
@@ -172,8 +195,8 @@ public final class Manager {
     }
 
     /**
-     * <h4>Wildcard Method createObject</h4>
      * Taken out of other createObject method for visibility.
+     *
      * @param res   Database call ResultSet
      * @param type  class for new object
      * @param <T>   wildcard class type
@@ -220,8 +243,8 @@ public final class Manager {
     }
 
     /**
-     * <h4>Method setFieldValue</h4>
      * Function needed in two different places of T createObject methods so it got extracted to own method.
+     *
      * @param res   the ResultSet from getObject.
      * @param t     wildcard.
      * @param field Field where a new value will be set.
@@ -269,8 +292,8 @@ public final class Manager {
 */
 
     /**
-     * <h4>Method createTable</h4>
      * can be used to create a new table in the database from a certain object.
+     *
      * @param object    the object from which fields a createTable query will be created and executed.
      */
     public static void createTable(Object object) {
@@ -285,9 +308,9 @@ public final class Manager {
     }
 
     /**
-     * <h4>Method save</h4>
      * Insert query.
      * Inserts a new object into the database
+     *
      * @param object    the object of which it's data will be inserted into the database.
      */
     public static void save(Object object) {
@@ -305,9 +328,9 @@ public final class Manager {
     }
 
     /**
-     * <h4>Method saveOrUpdate</h4>
-     * Upsert query
-     * Inserts a new object into the database or updates a database entry if already in database
+     * Upsert query.
+     * Inserts a new object into the database or updates a database entry if already in database.
+     *
      * @param object   the object of which it's data will be upserted in the database.
      */
     public static void saveOrUpdate(Object object) {
@@ -325,8 +348,9 @@ public final class Manager {
         }
     }
 
-    /** <h4>Inner Method addSuperClassTargets</h4>
+    /**
      * Helper Method for parent class variable fetching. Calls parent class entities recursively and adds their inner fields to target list.
+     *
      * @param select    the current selectQuery
      * @param targets   the selectQuery target field list
      * @param entity    the current Entity

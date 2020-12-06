@@ -11,11 +11,29 @@ import java.util.*;
  * SQL query class for select statements.
  */
 public class SelectQuery implements Query,QueryLanguage{
+    /**
+     * Select sql string.
+     */
     private final String operation = "SELECT";
+    /**
+     * List of targets.
+     */
     List<String> targets = new ArrayList<>();
+    /**
+     * List of tables.
+     */
     List<String> tables = new ArrayList<>();
+    /**
+     * HashMap for conditions.
+     */
     Map<String,String> conditions = new LinkedHashMap<>();
+    /**
+     * The select query string.
+     */
     String query;
+    /**
+     * Entity, the select query is based upon.
+     */
     Entity entity;
 
     @Override
@@ -34,6 +52,11 @@ public class SelectQuery implements Query,QueryLanguage{
         this.conditions.put(column.toString(),value.toString());
     }
 
+    /**
+     * Set the entity.
+     *
+     * @param entity    Entity the query is based off.
+     */
     public void setEntity (Entity entity) { this.entity = entity; }
 
     //TODO multiple tables are already part of join - needs to be refactored

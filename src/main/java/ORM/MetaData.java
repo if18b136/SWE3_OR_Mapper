@@ -13,15 +13,24 @@ import java.time.LocalDate;
 
 
 /**
- * <h2>static MetaData class</h2>
- * class for all kinds of metadata extraction, handling, manipulation, etc... .
+ * Class for all kinds of metadata extraction, handling, manipulation, etc... .
  */
 public final class MetaData {
+    /**
+     * Metadata logger
+     */
     static final Logger metaDataLogger = LogManager.getLogger("MetaData");
 
-    public static String getAnnotationTableName(Class<?> c) {
+    /**
+     * Retrieves the annotated database table name of a class, if set.
+     * If no table name annotation set, throws an exception.
+     *
+     * @param type  Class that will be searched for a table name annotation.
+     * @return  Either the table name as String or throws an exception (null theoretically not reachable).
+     */
+    public static String getAnnotationTableName(Class<?> type) {
         try{
-            Table annotation = c.getAnnotation(Table.class);
+            Table annotation = type.getAnnotation(Table.class);
             if(annotation != null) {
                 return annotation.name();
             } else {
@@ -33,6 +42,12 @@ public final class MetaData {
         return null;    // not reachable - method either returns String or throws an Exception
     }
 
+    /**
+     * Checks a reflection field for the custom primary key annotation.
+     *
+     * @param field Java reflection field.
+     * @return      True or false, depending on if annotation is set.
+     */
     public static boolean isPrimary(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
@@ -43,6 +58,12 @@ public final class MetaData {
         return false;
     }
 
+    /**
+     * Checks a reflection field for the custom auto increment annotation.
+     *
+     * @param field Java reflection field.
+     * @return      True or false, depending on if annotation is set.
+     */
     public static boolean isAutoIncrement(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
@@ -53,6 +74,12 @@ public final class MetaData {
         return false;
     }
 
+    /**
+     * Checks a reflection field for the custom foreign key annotation.
+     *
+     * @param field Java reflection field.
+     * @return      True or false, depending on if annotation is set.
+     */
     public static boolean isForeign(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
@@ -63,6 +90,12 @@ public final class MetaData {
         return false;
     }
 
+    /**
+     * Checks a reflection field for the custom ignore annotation.
+     *
+     * @param field Java reflection field.
+     * @return      True or false, depending on if annotation is set.
+     */
     public static boolean isIgnore(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
@@ -73,6 +106,12 @@ public final class MetaData {
         return false;
     }
 
+    /**
+     * Checks a reflection field for the custom nullable annotation.
+     *
+     * @param field Java reflection field.
+     * @return      True or false, depending on if annotation is set.
+     */
     public static boolean isNullable(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
@@ -83,6 +122,13 @@ public final class MetaData {
         return false;
     }
 
+    /**
+     * Retrieves the annotated database foreign column name of a class, if set.
+     * If no column name annotation set, throws an exception.
+     *
+     * @param field Java reflection field.
+     * @return      Annotated foreign column name as String.
+     */
     public static String getForeignColumn(Field field) {
         try{
             Annotation[] annotations = field.getDeclaredAnnotations();
@@ -98,6 +144,13 @@ public final class MetaData {
         return null;
     }
 
+    /**
+     * Retrieves the annotated database foreign table name of a class, if set.
+     * If no table name annotation set, throws an exception.
+     *
+     * @param field Java reflection field.
+     * @return      Annotated foreign table name as String.
+     */
     public static String getForeignTable(Field field) {
         try{
             Annotation[] annotations = field.getDeclaredAnnotations();
@@ -114,8 +167,8 @@ public final class MetaData {
     }
 
     /**
-     * <h4>Method buildTableName</h4>
      * Little helper function to get normed table names.
+     *
      * @param name Simple name of class without @Table Annotation or empty tableName
      * @return String construct of "t_" + class name in lower case.
      */
@@ -125,8 +178,8 @@ public final class MetaData {
 
 
     /**
-     * <h4>Method toColumnType</h4>
      * traverses custom Classes for foreign key types and converts LocalDate to SQL.Date.
+     *
      * @param field the field as argument for entity access.
      * @param object the field as object for value returning.
      * @return Either a new object with a "simple" type, a SQL.Date object or the original object if it was simple enough.
@@ -145,6 +198,13 @@ public final class MetaData {
         return object;
     }
 
+    /**
+     * Converts <code>java.sql.Date</code> to <code>java.time.LocalDate</code> format.
+     *
+     * @param field     Field that will be checked if local field needs conversion.
+     * @param object    Value as object.
+     * @return  Converted or original object.
+     */
     public static Object toFieldType(ORM.Base.Field field, Object object) {
         // TODO add other field type conversions
         if (field.getFieldType().equals(LocalDate.class)) {
@@ -154,6 +214,14 @@ public final class MetaData {
     }
 
     //TODO retire after refactoring - bad way to convert because every single var needs an own conversion and special case handling for extras.
+
+    /**
+     * Type parser for different java types to Database types.
+     *
+     * @param type      Java type as string.
+     * @param length    Optional length if set in custom class.
+     * @return  Database var type as String.
+     */
     public static String parseType(String type, int length) {
         try {
             return switch (type) {
