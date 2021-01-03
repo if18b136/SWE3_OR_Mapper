@@ -145,11 +145,9 @@ public class SelectQuery implements Query,QueryLanguage{
             }
             selectQuery.append(semicolon);                                          // ";"
             this.query = selectQuery.toString();
-            System.out.println(this.query);
             return this.query;
         } catch (SQLSyntaxErrorException see) {
             see.printStackTrace();
-            System.out.println("test in selectQuery");
         }
         return null;
     }

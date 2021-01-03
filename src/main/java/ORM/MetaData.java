@@ -39,6 +39,7 @@ public final class MetaData {
             }
         } catch (IllegalArgumentException iae) {
             metaDataLogger.error(iae);
+            iae.printStackTrace();
         }
         return null;    // not reachable - method either returns String or throws an Exception
     }
@@ -101,7 +102,6 @@ public final class MetaData {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
             if(annotation instanceof MtoN) {
-                System.out.println("M to N found: " + field.getName());
                 return true;
             }
         }
@@ -234,7 +234,6 @@ public final class MetaData {
      */
     public static Object toColumnType(ORM.Base.Field field, Object object) {
         if (field.isForeign() && !field.isPrimary() && object != null) {  //if it is primary, it can not be a custom class - TODO check that
-            System.out.println("toColumnType - " + field.getColumnName() + " : " + object.toString());
             ORM.Base.Field foreignField = Manager.getEntity(object).getPrimaryFields()[0];  //TODO why access only the first pk?
             return MetaData.toColumnType(foreignField, foreignField.getValue(object));      //recursive call to get to the root and access a non-custom Object (eg. int instead of Teacher)
         }

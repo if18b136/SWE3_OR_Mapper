@@ -37,9 +37,9 @@ public class Course {
      * Database column for m:n entries for students attending the course.
      */
     @Column
-    @MtoN(table = "t_student_courses", correspondingClass = Student.class)
+    @MtoN(table = "t_student_course", correspondingClass = Student.class)
 //    @ForeignKey(table = "t_student_courses", column = "course_id", foreignColumn = "student_id")
-    private List<Student> students;
+    private List<Student> students; // do not init with = new Arraylist() here!
 
     /**
      * Empty constructor for course class.

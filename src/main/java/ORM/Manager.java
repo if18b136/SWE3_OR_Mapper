@@ -1,6 +1,7 @@
 package ORM;
 
 import Database.DatabaseConnection;
+import Entities.Course;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Queries.CreateTableQuery;
@@ -16,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -331,7 +333,6 @@ public final class Manager {
 
                 // m:n
                 if(entity.getManyFields().length > 0) {
-                    System.out.println("M:N INIT.");
                     for (Field field : entity.getManyFields()) {
                         // check if corresponding table already exists
                         Class<?> corrClass = MetaData.getManyClass(field.getField());
@@ -339,7 +340,7 @@ public final class Manager {
                             if(tableExists(MetaData.getAnnotationTableName(corrClass))) { // create m:n table query from this and every other class involved.
                                 String manyTableQuery = new CreateTableQuery().buildManyQuery(field.getForeignTable(), entity, getEntity(MetaData.getManyClass(field.getField())));
                                 initStmt = db.prepareStatement(manyTableQuery);
-                                managerLogger.info(tableQuery);
+                                managerLogger.info(manyTableQuery);
                                 initStmt.execute();
                             }
                             // if not ignore - user needs to create it before being able to insert anything here
@@ -364,9 +365,20 @@ public final class Manager {
             InsertQuery insertQuery = new InsertQuery();
             insertQuery.buildQuery(object, entity);
             managerLogger.info(insertQuery.getQuery());
-            PreparedStatement insertStmt = insertQuery.getStmt();
+            PreparedStatement insertStmt = insertQuery.getStmt();   //TODO - adapt so it becomes temp too like buildManyQuery()
             insertStmt.executeUpdate();
-            // insertCache(object);
+            insertCache(object);
+
+            if (entity.getManyFields().length > 0) {
+                for (Field field : entity.getManyFields()) {
+                    Class<?> corrClass = MetaData.getManyClass(field.getField());
+                    if(corrClass != null) {
+                        if (tableExists(MetaData.getAnnotationTableName(corrClass)) && field.getValue(object) != null) {
+                            managerLogger.info(insertQuery.buildManyQuery(object, field.getValue(object)));     // more direct version with inner execute and no perma-stored query.
+                        }
+                    }
+                }
+            }
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }
@@ -388,6 +400,16 @@ public final class Manager {
             PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
             insertCache(object);
+            if (entity.getManyFields().length > 0) {
+                for (Field field : entity.getManyFields()) {
+                    Class<?> corrClass = MetaData.getManyClass(field.getField());
+                    if(corrClass != null) {
+                        if (tableExists(MetaData.getAnnotationTableName(corrClass))) {
+                            managerLogger.info(insertQuery.buildManyQuery(object, field.getEntity()), getEntity(MetaData.getManyClass(field.getField())));
+                        }
+                    }
+                }
+            }
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }

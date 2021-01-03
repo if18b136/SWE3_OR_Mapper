@@ -54,8 +54,6 @@ public class CreateTableQuery implements QueryLanguage {
                         if(field.isForeign()) { // TODO cleanup
                             String foreignColumnName = field.getForeignColumn();
                             Entity foreignEntity = Manager.getEntityIfExists(field.getFieldType());
-                            if(foreignEntity != null)
-                                System.out.println("Entity: " + entity.getTableName() + ", foreign: " + foreignEntity.getTableName() + ", colName: " + foreignColumnName);
                             if(foreignEntity != null) {
                                 Class<?> foreignClass = foreignEntity.getEntityClass();
                                 try {

@@ -5,6 +5,7 @@ import ORM.Annotations.ForeignKey;
 import ORM.Annotations.MtoN;
 import ORM.Annotations.Table;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,9 +20,9 @@ public class Student extends Person{
      * Database column for m:n entries for courses the student attends.
      */
     @Column
-    @MtoN(table = "t_student_courses", correspondingClass = Course.class)
+    @MtoN(table = "t_student_course", correspondingClass = Course.class)
 //    @ForeignKey(table = "t_student_courses", column = "student_id", foreignColumn = "course_id")
-    private List<Course> courses;
+    private List<Course> courses;   // do not init with = new Arraylist() here!
 
     public Student() {}
 
@@ -35,13 +36,20 @@ public class Student extends Person{
     }
 
     public void addCourse(Course course) {
-        if (!this.courses.contains(course)) {
+        if(this.courses == null) {
+            this.courses = new ArrayList<>();
             this.courses.add(course);
+        } else if (this.courses.isEmpty()) {
+            this.courses.add(course);
+        } else {
+            if (!this.courses.contains(course)) {
+                this.courses.add(course);
+            }
         }
     }
 
     public void removeCourse(Course course) {
-        if (!this.courses.contains(course)) {
+        if(this.courses != null && !this.courses.isEmpty()) {
             this.courses.remove(course);
         }
     }
