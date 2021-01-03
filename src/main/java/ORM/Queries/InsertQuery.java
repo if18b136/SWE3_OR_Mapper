@@ -74,16 +74,12 @@ public class InsertQuery implements QueryLanguage {
             Field[] fields = entity.getFields();
 
             for ( Field field : fields) {
-                if(!field.isAutoIncrement()) { //AI does not need manual insertion - could be expanded with set value check
-                    if(first) {
-                        first = false;
-                    } else {
-                        if(field.getValue(object) != null) {
+                //AI does not need manual insertion - could be expanded with set value check
+                if(!field.isAutoIncrement() && field.getValue(object) != null) { //checks if current column has a value - if not, no need for addition in insert query
+                    if(!first) {
                             columns.append(comma).append(space);
                             columnValues.append(comma).append(space);
-                        }
                     }
-
                     if (field.isForeign()) {                    // get the type and value of the foreign object
                         if (field.getValue(object) != null) {
                             columns.append(field.getColumnName());      // append col Name
@@ -97,6 +93,7 @@ public class InsertQuery implements QueryLanguage {
                         columnValues.append(question);              // add anti-SQL-Injection question mark
                         values.add(field.getValue(object));         // add value to object array from which it can be inserted into the prepared statement later
                     }
+                    first = false;
                 }
             }
 

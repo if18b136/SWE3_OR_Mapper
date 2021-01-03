@@ -5,6 +5,7 @@ import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Queries.CreateTableQuery;
 import ORM.Queries.InsertQuery;
+import ORM.Queries.Query;
 import ORM.Queries.SelectQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +28,10 @@ public final class Manager {
      */
     final static Logger managerLogger = LogManager.getLogger("Manager");
     /**
+     * Private boolean for cache enabling and disabling.
+     */
+    private static Boolean caching = false;
+    /**
      * HashMap with cached entities objects, classified by their respective class object
      */
     protected static HashMap<Class<?>, Entity> entitiesCache = new HashMap<>();
@@ -34,6 +39,8 @@ public final class Manager {
      * HashMap with caches for each custom entity class.
      */
     private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
+    //TODO
+    private static ArrayList<Entity> tableCache = new ArrayList<>();
     /**
      * Database connection as static variable to make database calls faster.
      */
@@ -77,10 +84,21 @@ public final class Manager {
      * @param object    Cached entity object.
      */
    private static void insertCache (Object object) {
-       if(!objectCache.containsKey(object.getClass())) {
-           objectCache.put(object.getClass(),new Cache());
+       if(caching) {
+           if(!objectCache.containsKey(object.getClass())) {
+               objectCache.put(object.getClass(),new Cache());
+           }
+           objectCache.get(object.getClass()).setEntry(getEntity(object).getPrimaryFields()[0].getValue(object),object);
        }
-       objectCache.get(object.getClass()).setEntry(getEntity(object).getPrimaryFields()[0].getValue(object),object);
+   }
+
+   public static void enableCaching(Boolean bool) {
+       caching = bool;
+   }
+
+   public static void depleteCache() {
+       entitiesCache.clear();
+       objectCache.clear();
    }
 
     /**
@@ -292,16 +310,43 @@ public final class Manager {
 */
 
     /**
-     * can be used to create a new table in the database from a certain object.
+     * Can be used to create a new table in the database from a certain object.
+     * Update 15.12.2020: Now also creates superclass tables if object is subclass and has not already been created
      *
      * @param object    the object from which fields a createTable query will be created and executed.
      */
     public static void createTable(Object object) {
         try {
-            Entity entity = getEntity(object);
-            managerLogger.info(new CreateTableQuery().buildQuery(entity));
-            PreparedStatement initStmt = db.prepareStatement(new CreateTableQuery().buildQuery(entity));
-            initStmt.execute();
+            Class<?> type = ((object instanceof Class) ? (Class<?>) object : object.getClass());
+            Entity entity = getEntity(type);
+            if(!tableCache.contains(entity)) {
+                if(entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
+                    createTable(entity.getSuperClass());
+                }
+                String tableQuery = new CreateTableQuery().buildQuery(entity);
+                PreparedStatement initStmt = db.prepareStatement(tableQuery);
+                managerLogger.info(tableQuery);
+                initStmt.execute();
+                tableCache.add(entity);
+
+                // m:n
+                if(entity.getManyFields().length > 0) {
+                    System.out.println("M:N INIT.");
+                    for (Field field : entity.getManyFields()) {
+                        // check if corresponding table already exists
+                        Class<?> corrClass = MetaData.getManyClass(field.getField());
+                        if(corrClass != null) {
+                            if(tableExists(MetaData.getAnnotationTableName(corrClass))) { // create m:n table query from this and every other class involved.
+                                String manyTableQuery = new CreateTableQuery().buildManyQuery(field.getForeignTable(), entity, getEntity(MetaData.getManyClass(field.getField())));
+                                initStmt = db.prepareStatement(manyTableQuery);
+                                managerLogger.info(tableQuery);
+                                initStmt.execute();
+                            }
+                            // if not ignore - user needs to create it before being able to insert anything here
+                        }
+                    }
+                }
+            }
         } catch (SQLException sql) {
             sql.printStackTrace();
         }
@@ -342,7 +387,7 @@ public final class Manager {
             managerLogger.info(insertQuery.getQuery());
             PreparedStatement insertStmt = insertQuery.getStmt();
             insertStmt.executeUpdate();
-            // insertCache(object);
+            insertCache(object);
         } catch (SQLException sql) {
             managerLogger.error(sql);
         }

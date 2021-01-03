@@ -8,6 +8,7 @@ import ORM.Manager;
 import ORM.MetaData;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,6 +54,8 @@ public class CreateTableQuery implements QueryLanguage {
                         if(field.isForeign()) { // TODO cleanup
                             String foreignColumnName = field.getForeignColumn();
                             Entity foreignEntity = Manager.getEntityIfExists(field.getFieldType());
+                            if(foreignEntity != null)
+                                System.out.println("Entity: " + entity.getTableName() + ", foreign: " + foreignEntity.getTableName() + ", colName: " + foreignColumnName);
                             if(foreignEntity != null) {
                                 Class<?> foreignClass = foreignEntity.getEntityClass();
                                 try {
@@ -86,4 +89,56 @@ public class CreateTableQuery implements QueryLanguage {
         createTable.append(brClosed).append(semicolon);
         return createTable.toString();
     }
+
+    public String buildManyQuery(String tableName, Entity... entities) {
+        StringBuilder createTable = new StringBuilder();
+        createTable.append(operation).append(space).append(tableName).append(space).append(brOpen);    // "CREATE TABLE" + " " + "--table Name--" + " " + "("
+        StringBuilder fk = new StringBuilder();
+        boolean first = true;
+
+        for (Entity entity : entities) {    // traverse through all entities
+            for(Field field : entity.getPrimaryFields()) {  // traverse through all primary key fields
+                Annotation[] annotations = field.getField().getDeclaredAnnotations();
+                for (Annotation annotation : annotations) { // traverse through all annotations to get the fk+pk fields
+                    if(annotation instanceof Column) {  // only search for fk needed because getPrimaryFields() made sure there are only pk Fields getting traversed
+                        if(!first) { createTable.append(comma); } // every additional entry needs a ", " at the beginning}
+                        createTable.append(space).append(entity.getTableName()).append("_").append(field.getColumnName());        // "--column Name--" + " "
+                        if(field.isForeign()) { // fk+pk fields need the type of their original entity
+                            String foreignColumnName = field.getForeignColumn();
+                            Entity foreignEntity = Manager.getEntityIfExists(field.getFieldType());
+                            if(foreignEntity != null) {
+                                Class<?> foreignClass = foreignEntity.getEntityClass();
+                                try {
+                                    java.lang.reflect.Field foreignField = foreignClass.getDeclaredField(foreignColumnName);    // get the reflection field of the foreign key
+                                    createTable.append(space).append(MetaData.parseType(foreignField.getType().getName(),((Column) annotation).length()));
+                                } catch (NoSuchFieldException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {    // Set to foreign key but is not a custom class - means user better made sure to assign the same type to both fields
+                                createTable.append(space).append(MetaData.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                            }
+                        } else {
+                            createTable.append(space).append(MetaData.parseType(field.getField().getType().getName(),((Column) annotation).length()));
+                        }
+                        // not needed here because every entry needs a foreign key addressing the original table
+//                    } else if (annotation instanceof ForeignKey) {
+//                        createTable.append(comma).append(space).append(foreign).append(space).append(brOpen);
+//                        createTable.append(field.getColumnName()).append(brClosed);
+//                        createTable.append(space).append(reference).append(space).append(MetaData.getForeignTable(field.getField()));
+//                        createTable.append(brOpen).append(MetaData.getForeignColumn(field.getField())).append(brClosed);
+                        fk.append(comma).append(space).append(foreign).append(space).append(brOpen);
+                        fk.append(entity.getTableName()).append("_").append(field.getColumnName()).append(brClosed);   // appending the new colName
+                        fk.append(space).append(reference).append(space).append(entity.getTableName());                // reference the entity table name
+                        fk.append(brOpen).append(field.getColumnName()).append(brClosed);
+                    }
+                    first = false;
+                }
+            }
+
+        }
+        createTable.append(fk);
+        createTable.append(brClosed).append(semicolon);
+        return createTable.toString();
+    }
+
 }

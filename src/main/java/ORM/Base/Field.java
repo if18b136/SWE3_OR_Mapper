@@ -6,58 +6,51 @@ import ORM.MetaData;
  *  Every database column gets represented as a field.
  */
 public class Field {
-
     /**
      * This field's class.
      */
     private Class<?> fieldType;
-
     /**
      * This field's entity
      */
     private Entity entity;
-
     /**
      * The <code>java.lang.reflect.Field</code> this field is based on.
      */
     private java.lang.reflect.Field field;
-
     /**
      * This field's column name in the database.
      */
     private String columnName;
-
     /**
      * Boolean true/false if field has primary key attribute in database.
      */
     private boolean primary;
-
     /**
      * Boolean true/false if field has auto increment attribute in database.
      */
     private boolean autoIncrement;
-
     /**
      * Boolean true/false if field has foreign key attribute in database.
      */
     private boolean foreign;
-
+    /**
+     * Boolean true/false if field has a m:n relation in database.
+     */
+    private boolean mn;
     /**
      * Name of foreign table if field is external field and thus references another column in database.
      */
     private String foreignTable;
-
     /**
      * Name of foreign column if field is external field and thus references another column in database.
      */
     private String foreignColumn;
-
     /**
      * Boolean true/false if field can be ignored for database entry creation.
      * Example: field is referencing a foreign key relation (1:1, 1:n) but does not need a foreign key entry in this table.
      */
     private boolean ignore;
-
     /**
      * Boolean true/false if field has nullable key attribute in database.
      */
@@ -80,6 +73,7 @@ public class Field {
         this.fieldType = field.getType();
         this.ignore = MetaData.isIgnore(field);
         this.nullable = MetaData.isNullable(field);
+        this.mn = MetaData.isManyToMany(field);
     }
 
     /**
@@ -203,6 +197,12 @@ public class Field {
      */
     public boolean isForeign() { return this.foreign; }
     /**
+     * Boolean check if this field has a m:n relation in the DB.
+     *
+     * @return true if field is m:n, else false.
+     */
+    public boolean isManyToMany() { return this.mn; }
+    /**
      * Boolean check if this field is annotated as nullable.
      *
      * @return  True if field is annotated as nullable, else false.
@@ -219,7 +219,5 @@ public class Field {
      *
      * @return  True if field is annotated as m:n relation, else false.
      */
-    public boolean isMtoN () {
-        return this.foreignTable.isEmpty();
-    }
+    public boolean isMtoN () { return this.mn; }
 }

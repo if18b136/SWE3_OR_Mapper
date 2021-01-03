@@ -2,7 +2,10 @@ package Entities;
 
 import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
+import ORM.Annotations.MtoN;
 import ORM.Annotations.Table;
+
+import java.util.List;
 
 /**
  * Custom course class for ORM framework testing.
@@ -30,6 +33,13 @@ public class Course {
     @Column(nullable = false)
     @ForeignKey(table = "t_teacher", column = "id")
     private Teacher teacher;
+    /**
+     * Database column for m:n entries for students attending the course.
+     */
+    @Column
+    @MtoN(table = "t_student_courses", correspondingClass = Student.class)
+//    @ForeignKey(table = "t_student_courses", column = "course_id", foreignColumn = "student_id")
+    private List<Student> students;
 
     /**
      * Empty constructor for course class.

@@ -2,6 +2,7 @@ package Entities;
 
 import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
+import ORM.Annotations.MtoN;
 import ORM.Annotations.Table;
 
 import java.util.List;
@@ -14,9 +15,12 @@ public class Student extends Person{
     @Column(primary = true)
     @ForeignKey(table = "t_person", column = "id")
     private int id;
-
+    /**
+     * Database column for m:n entries for courses the student attends.
+     */
     @Column
-    @ForeignKey(table = "t_student_courses", column = "student_id", foreignColumn = "course_id")
+    @MtoN(table = "t_student_courses", correspondingClass = Course.class)
+//    @ForeignKey(table = "t_student_courses", column = "student_id", foreignColumn = "course_id")
     private List<Course> courses;
 
     public Student() {}

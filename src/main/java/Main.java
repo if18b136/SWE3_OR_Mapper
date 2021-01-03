@@ -1,8 +1,6 @@
 import Database.DatabaseConnection;
 
-import Entities.Person;
-import Entities.Student;
-import Entities.Teacher;
+import Entities.*;
 import ORM.Manager;
 
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +45,9 @@ public class Main {
             timmy.setFirstName("Thomas");
             Manager.saveOrUpdate(timmy);
 
+            //TODO superclass instance needs to be created if not exists - but how to determine when it needs to be created and when not?
+            //Not necessary - just describe it in show program
+
             Student std = new Student(1);
             Manager.createTable(std);
             Manager.save(std);
@@ -60,6 +61,10 @@ public class Main {
 
             Teacher getThomasFromCache =  Manager.get(Teacher.class, 1);
             System.out.println(getThomasFromCache.getBirthDate());
+
+            Course mathematics = new Course(1,"Math", 3.5, thomasTeacher);
+            Manager.createTable(mathematics);
+            Manager.save(mathematics);
 
         } catch (Exception e) {
             mainLogger.error(e);

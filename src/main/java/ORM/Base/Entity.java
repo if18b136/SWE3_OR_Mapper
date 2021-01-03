@@ -34,6 +34,10 @@ public class Entity {
      */
     private Field[] externalFields;
     /**
+     * Field array of this entity's m:n fields.
+     */
+    private Field[] manyFields;
+    /**
      * Parent class or object.Class if base class.
      */
     private Class<?> superClass;
@@ -72,18 +76,22 @@ public class Entity {
         List<Field> primaryFieldsList = new ArrayList<>();
         List<Field> internalFieldsList = new ArrayList<>();
         List<Field> externalFieldsList = new ArrayList<>();
+        List<Field> manyFieldsList = new ArrayList<>();
 
         java.lang.reflect.Field[] fields = type.getDeclaredFields();
         for(java.lang.reflect.Field field : fields) {
             Field ormField = new Field(this, field);
             if(!ormField.ignore()) { // the ignore check handles fields like Teacher.Courses, which is not a entry in t_teacher, but a fillable field in teacher Object
                 fieldsList.add(ormField);
-                //TODO own array for fields that are neither internal nor external (=ignored)?
                 if(ormField.isPrimary() && !primaryFieldsList.contains(ormField)) {
                     primaryFieldsList.add(ormField);
                 }
+                if(ormField.isMtoN()) {
+                    manyFieldsList.add(ormField);
+                    ormField.setForeignTable(MetaData.getManyTable(field));
+                }
                 if(ormField.isForeign()) {
-                    ormField.setForeignColumn(MetaData.getForeignColumn(field));
+                    ormField.setForeignColumn(MetaData.getForeignColumn(field));    //TODO why is this not in field init?
                     ormField.setForeignTable(MetaData.getForeignTable(field));
                     externalFieldsList.add(ormField);
                 } else {
@@ -96,7 +104,7 @@ public class Entity {
         this.primaryFields = primaryFieldsList.toArray(new Field[0]);
         this.internalFields = internalFieldsList.toArray(new Field[0]);
         this.externalFields = externalFieldsList.toArray(new Field[0]);
-
+        this.manyFields = manyFieldsList.toArray(new Field[0]);
         // get superclass without need of extra annotating them
         this.superClass = type.getSuperclass();
     }
@@ -142,6 +150,13 @@ public class Entity {
      * @return  this entity's foreign key fields as field array.
      */
     public Field[] getExternalFields() { return this.externalFields; }
+
+    /**
+     * Public getter for this entity's m:n fields.
+     *
+     * @return  this entity's m:n fields as field array.
+     */
+    public Field[] getManyFields() { return this.manyFields; }
 
     /**
      * Public getter for this entity's parent class.

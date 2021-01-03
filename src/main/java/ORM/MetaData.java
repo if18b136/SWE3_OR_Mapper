@@ -2,6 +2,7 @@ package ORM;
 
 import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
+import ORM.Annotations.MtoN;
 import ORM.Annotations.Table;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,6 +92,23 @@ public final class MetaData {
     }
 
     /**
+     * Checks a reflection field for the custom foreign key annotation and if the foreignColumn attribute is set.
+     * if yes it is a m:n relationship in the DB.
+     * @param field     Java reflection field.
+     * @return          True if m:n, else false.
+     */
+    public static boolean isManyToMany(Field field) {
+        Annotation[] annotations = field.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if(annotation instanceof MtoN) {
+                System.out.println("M to N found: " + field.getName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks a reflection field for the custom ignore annotation.
      *
      * @param field Java reflection field.
@@ -160,6 +178,36 @@ public final class MetaData {
                 }
             }
             throw new Exception("no Foreign Key Annotation set for Field: " + field.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getManyTable(Field field) {
+        try{
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if(annotation instanceof MtoN) {
+                    return ((MtoN) annotation).table();
+                }
+            }
+            throw new Exception("no m:n Annotation set for Field: " + field.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static Class<?> getManyClass(Field field) {
+        try{
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if(annotation instanceof MtoN) {
+                    return ((MtoN) annotation).correspondingClass();
+                }
+            }
+            throw new Exception("no m:n Annotation set for Field: " + field.getName());
         } catch (Exception e) {
             e.printStackTrace();
         }
