@@ -6,6 +6,7 @@ import ORM.Annotations.MtoN;
 import ORM.Annotations.Table;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -54,4 +55,11 @@ public class Student extends Person{
         }
     }
 
+    public List<String> getBookedCourses() {
+        List<String> list = new ArrayList<>();
+        for (Course course : this.courses) {
+            list.add(course.getCourseName());
+        }
+        return list;
+    }
 }

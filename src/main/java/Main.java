@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author Maximilian Rotter
@@ -65,16 +66,23 @@ public class Main {
             Manager.save(mathematics);
             Course history = new Course(2,"History", 1.5, thomasTeacher);
             Manager.save(history);
-            Course english = new Course(2,"English", 2.0, thomasTeacher);
+            Course english = new Course(3,"English", 2.0, thomasTeacher);
             Manager.save(english);
 
-            System.out.println("WE NEED A ENTRY PER COURSE AND NOT ONE WITH EVERY COURSE - CHANGE INPUT FOR BUILDMANYQUERY() IN MANAGER TO A FOREACH FOR THE ARRAYLIST");
+            Course getHis = Manager.get(Course.class, 2);
+            System.out.println(getHis.getCourseName());
+
             Student std = new Student(1);
             Manager.createTable(std);
             std.addCourse(mathematics);
             std.addCourse(history);
             std.addCourse(english);
             Manager.save(std);
+            std.getBookedCourses().forEach(System.out::println);
+
+            Student stdGet = Manager.get(Student.class, 1);
+            List<String> list = stdGet.getBookedCourses();
+            list.forEach(System.out::println);
 
         } catch (Exception e) {
             mainLogger.error(e);

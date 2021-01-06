@@ -140,7 +140,6 @@ public class InsertQuery implements QueryLanguage {
 
     public String buildManyQuery(Object... objects) {
         try {
-
             StringBuilder insertQuery = new StringBuilder();
             insertQuery.append(operation).append(space);                    // "INSERT into" + " "
             Entity ent = Manager.getEntity(objects[0].getClass());
@@ -153,7 +152,7 @@ public class InsertQuery implements QueryLanguage {
             boolean first = true;
             //Field[] fields = entity.getFields();
 
-            List<Object> args = melt(objects);
+            List<Object> args = melt(objects);  // TODO - not needed anymore, only 2 objects are getting put through now.
 
             for (Object object : args) {
                 Entity entity = Manager.getEntity(object.getClass()); //creates a entity called t_field for arraylist courses
@@ -215,8 +214,8 @@ public class InsertQuery implements QueryLanguage {
             stmt.executeUpdate();
             return insertQuery.toString();
 
-        } catch (InvalidParameterException | SQLException ipe) {
-            ipe.printStackTrace();
+        } catch (InvalidParameterException | SQLException | NullPointerException ex) {
+            ex.printStackTrace();
         }
         return null;
     }

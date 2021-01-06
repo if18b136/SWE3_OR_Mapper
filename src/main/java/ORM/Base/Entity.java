@@ -86,16 +86,17 @@ public class Entity {
                 if(ormField.isPrimary() && !primaryFieldsList.contains(ormField)) {
                     primaryFieldsList.add(ormField);
                 }
-                if(ormField.isMtoN()) {
+                if(ormField.isMtoN()) {     // m:n fields are not really existing in the db - they have their own table
                     manyFieldsList.add(ormField);
                     ormField.setForeignTable(MetaData.getManyTable(field));
-                }
-                if(ormField.isForeign()) {
-                    ormField.setForeignColumn(MetaData.getForeignColumn(field));    //TODO why is this not in field init?
-                    ormField.setForeignTable(MetaData.getForeignTable(field));
-                    externalFieldsList.add(ormField);
                 } else {
-                    internalFieldsList.add(ormField);
+                    if(ormField.isForeign()) {
+                        ormField.setForeignColumn(MetaData.getForeignColumn(field));    //TODO why is this not in field init?
+                        ormField.setForeignTable(MetaData.getForeignTable(field));
+                        externalFieldsList.add(ormField);
+                    } else {
+                        internalFieldsList.add(ormField);
+                    }
                 }
             }
         }

@@ -16,10 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Manager class operates as a single Instance for legal checks and other operational tests
@@ -41,7 +38,7 @@ public final class Manager {
      * HashMap with caches for each custom entity class.
      */
     private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
-    //TODO
+
     private static ArrayList<Entity> tableCache = new ArrayList<>();
     /**
      * Database connection as static variable to make database calls faster.
@@ -144,6 +141,8 @@ public final class Manager {
        return (T) getObject(type,pks);
     }
 
+
+
     /**
      * Either finds the object in one of the caches or calls the create function below the make a new one.
      *
@@ -151,13 +150,12 @@ public final class Manager {
      * @param pks   the identifier primary key(s) object(s)
      * @return      the object either from the cache or from the database.
      */
-    public static Object getObject(Class<?> type, Object... pks) {
-        if(objectCache.containsKey(type)) {
+    private static Object getObject(Class<?> type, Object... pks) {
+        if (objectCache.containsKey(type)) {
             return objectCache.get(type).contains(pks[0]) ? objectCache.get(type).getEntry(pks[0]) : createObject(type,pks);
         }
         return createObject(type,pks);
     }
-
 
     /**
      * Will be called if object is not cached already.
@@ -168,16 +166,29 @@ public final class Manager {
      * @param pks   the identifier primary key(s) object(s) from which the database select query will be constructed.
      * @return      A new object of type.Class with the stored database call values.
      */
-    public static Object createObject(Class<?> type, Object... pks)  {
+    private static Object createObject(Class<?> type, Object... pks)  {
         try {
             Entity entity = entitiesCache.get(type);    // getEntity needs an object as argument and so does not work here
-
             SelectQuery select = new SelectQuery();
             select.setEntity(entity);   // needed for primary keys if a join will be called.
             select.addTables(entity.getTableName());
             List<String> targets = new ArrayList<>();
-            for(Field field : entity.getInternalFields()) {
-                targets.add(field.getColumnName());
+
+            for (Field field : entity.getFields()) {
+                if (field.isPrimary()) {
+                    if (!field.isForeign()) {       // primary and foreign means existing superclass - added externally
+                        targets.add(field.getColumnName());
+                    }
+                } else {
+                    if (field.isForeign()) {
+                        // custom entity object as value
+                        targets.add(field.getColumnName());
+                    } else if (field.isMtoN()) {
+                        // does not need a select query - own table
+                    } else {
+                        targets.add(field.getColumnName());
+                    }
+                }
             }
 
             addSuperClassTargets(select,targets,entity);
@@ -186,14 +197,15 @@ public final class Manager {
             int i = 0;
             for(Field field : entity.getPrimaryFields()) {
                 select.addCondition(field.getColumnName(),pks[i]);
+                i++;
             }
 
             select.buildQuery();
+            managerLogger.info(select.getQuery());
             PreparedStatement stmt = db.prepareStatement(select.getQuery());
             ResultSet res = stmt.executeQuery();
             Object newObject = null;
             try{
-
                 if (res.next()){
                     newObject = createObject(res, type);
                 }
@@ -203,10 +215,8 @@ public final class Manager {
             res.close();
 
             if(newObject == null) { throw new SQLException("No data."); }
-
             // check if there is already a cache for the class, create a new one before inserting if not
             insertCache(newObject);
-
             return newObject;
         } catch (SQLException sql) {
             sql.printStackTrace();
@@ -216,6 +226,7 @@ public final class Manager {
 
     /**
      * Taken out of other createObject method for visibility.
+     * Update 2021.01.05 - now also hosts m:n creation
      *
      * @param res   Database call ResultSet
      * @param type  class for new object
@@ -228,30 +239,32 @@ public final class Manager {
      * @throws InstantiationException       if instancing a new object from type fails
      */
     private static <T> T createObject(ResultSet res, Class<T> type) throws SQLException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
-        if(!type.isPrimitive() && res.getMetaData().getColumnCount() > 1) {
+        if (!type.isPrimitive() && res.getMetaData().getColumnCount() > 1) {
             T t = type.getDeclaredConstructor().newInstance();
 
             Entity entity = getEntity(type);
 
-            for(Field field : getEntity(type).getPrimaryFields()) {
+            // TODO not needed if below fields is getting traversed - either delete here or change fields to internal, foreign and many
+            for (Field field : getEntity(type).getPrimaryFields()) {
                 field.setValue(t, res.getObject(field.getColumnName()));
             }
 
-            if(entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
+            if (entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
                 Entity superEntity = getEntity(entity.getSuperClass());
                 for (Field field : superEntity.getFields()) {
                     setFieldValue(res, t, field);
                 }
             }
 
-            for(Field field : getEntity(type).getFields()) {
+            for (Field field : entity.getFields()) {
                 setFieldValue(res, t, field);
             }
+
             return t;
         } else {
             //TODO handle something like "select 2 strings" here -> would need an array or list as return.
-            if(res.getMetaData().getColumnCount() > 1) {
-                for(int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
+            if (res.getMetaData().getColumnCount() > 1) {
+                for (int i = 1; i <= res.getMetaData().getColumnCount(); i++) {
                     // do something multiple times here.
                     System.out.println("I love you.");
                 }
@@ -272,17 +285,54 @@ public final class Manager {
      * @throws SQLException if ResultSet does not contain value of object with field column name.
      */
     private static <T> void setFieldValue(ResultSet res, T t, Field field) throws SQLException {
-        if(field.isPrimary() && !field.isForeign()) {
+        if(field.isPrimary() /*&& !field.isForeign()*/) {
             field.setValue(t, res.getObject(field.getColumnName()));
         } else {
             Object value;
-            if( field.isForeign()) {
-                value = MetaData.toFieldType(field,res.getObject(field.getEntity().getPrimaryFields()[0].getColumnName()));
+            if(field.isForeign()) {
+                // needs a new select for the foreign object here!!!
+                value = get(field.getFieldType(), MetaData.toFieldType(field,res.getObject(field.getColumnName())));
+                //value = MetaData.toFieldType(field,res.getObject(field.getEntity().getPrimaryFields()[0].getColumnName()));
+            } else if (field.isMtoN()) {
+                // hast to be handled extra - should not be settable here
+                Entity ent = field.getEntity();
+                if (tableExists(field.getForeignTable())) {
+                    //TODO ent.getManyFields()[0] restricts this call to a single m:n per custom entity
+                    value = getMN(getEntityIfExists(MetaData.getManyClass(field.getField())), field, res.getObject(ent.getPrimaryFields()[0].getColumnName()));
+                } else {
+                    value = new ArrayList<>(); // Not perfect - restricts m:n to arraylists
+                }
             } else {
                 value = MetaData.toFieldType(field,res.getObject(field.getColumnName()));
             }
             field.setValue(t, value);
         }
+    }
+
+    // super simple and not generic - only supports basic case atm.
+    private static List<Object> getMN(Entity entity, Field field, Object... pks) throws SQLException {
+        SelectQuery select = new SelectQuery();
+        select.setEntity(entity);
+        select.addTables(field.getForeignTable());  //the m:n table
+        for (Field f : entity.getPrimaryFields()) {
+            select.addTargets(entity.getTableName() + "_" + f.getColumnName()); // TODO name should not be specified here!
+        }
+        int i = 0;
+        for(Field f : field.getEntity().getPrimaryFields()) {
+            select.addCondition(field.getEntity().getTableName() + "_" + f.getColumnName(),pks[i]);    // get other entity from which the pks stem.
+            i++;
+        }
+        select.buildQuery();
+        managerLogger.info(select.getQuery());
+        PreparedStatement stmt = db.prepareStatement(select.getQuery());
+        ResultSet res = stmt.executeQuery();
+
+        List<Object> list = new ArrayList<>();
+
+        while (res.next()) {
+            list.add(get(entity.getEntityClass(),res.getObject(1)));
+        }
+        return list;
     }
 
     //TODO check advantage of using boxed java classes
@@ -370,17 +420,22 @@ public final class Manager {
             insertCache(object);
 
             if (entity.getManyFields().length > 0) {
-                for (Field field : entity.getManyFields()) {
+                for (Field field : entity.getManyFields()) {    //
                     Class<?> corrClass = MetaData.getManyClass(field.getField());
                     if(corrClass != null) {
-                        if (tableExists(MetaData.getAnnotationTableName(corrClass)) && field.getValue(object) != null) {
-                            managerLogger.info(insertQuery.buildManyQuery(object, field.getValue(object)));     // more direct version with inner execute and no perma-stored query.
+                        Object values = field.getValue(object);
+                        if (tableExists(MetaData.getAnnotationTableName(corrClass)) && values != null) {
+                            // cast the m:n entries to an array list for db queries.
+                            List<Object> list = mnListing(values);
+                            for (Object obj : list) {
+                                managerLogger.info(insertQuery.buildManyQuery(object, obj));     // more direct version with inner execute and no perma-stored query.
+                            }
                         }
                     }
                 }
             }
-        } catch (SQLException sql) {
-            managerLogger.error(sql);
+        } catch (SQLException | IllegalArgumentException ex) {
+            managerLogger.error(ex);
         }
     }
 
@@ -439,5 +494,17 @@ public final class Manager {
 //        else {
 //            System.out.println("Base entity in addSuperClassTargets");
 //        }
+    }
+
+    private static List<Object> mnListing(Object object) throws IllegalArgumentException {
+        List<Object> list;
+        if (object.getClass().isArray()) {
+            list = Arrays.asList((Object[]) object);
+        } else if (object instanceof Collection) {
+            list = new ArrayList<>((Collection<?>) object);
+        } else {
+            throw new IllegalArgumentException("Wrong type for m:n query: " + object.toString() + " --- " + object.getClass() );
+        }
+        return list;
     }
 }
