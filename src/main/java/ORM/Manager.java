@@ -38,6 +38,7 @@ public final class Manager {
      * HashMap with caches for each custom entity class.
      */
     private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
+    private static final HashMap<Class<?>, Cache> tempObjectCache = new HashMap<>();
 
     private static ArrayList<Entity> tableCache = new ArrayList<>();
     /**
@@ -131,6 +132,8 @@ public final class Manager {
     /**
      * Alternative to having to cast the generic object to a certain class.
      * Made into an extra method because of unchecked cast warning so it is up to the user which implementation they want to use.
+     * Added a temporary cache because m:n queries kept calling each other as objects.
+     * Manager caches every created object so there is only one call for each individual entity object.
      *
      * @param type  the class, the object will be cast to
      * @param pks   the primary key(s) as object(s)
@@ -138,13 +141,17 @@ public final class Manager {
      * @return      a object cast to the wildcard class
      */
     public static <T> T get(Class<T> type, Object... pks) {
-       return (T) getObject(type,pks);
+        Object obj = getObject(type,pks);
+        tempCache.clear();
+       return (T) obj;
     }
 
 
+    private static final HashMap<Entity,Object> tempCache = new HashMap<>();
 
     /**
      * Either finds the object in one of the caches or calls the create function below the make a new one.
+     * Due to get() now having a temporary cache for instances, all inner Manager functions call this method.
      *
      * @param type  the class of the wanted object
      * @param pks   the identifier primary key(s) object(s)
@@ -154,6 +161,13 @@ public final class Manager {
         if (objectCache.containsKey(type)) {
             return objectCache.get(type).contains(pks[0]) ? objectCache.get(type).getEntry(pks[0]) : createObject(type,pks);
         }
+        // fix for endless loop in m:n - write obj in temp cache and call it if already searched in this select query.
+        Entity entity = getEntityIfExists(type);
+        if (tempCache.containsKey(entity) && entity.getPrimaryFields()[0].getValue(tempCache.get(entity)).equals(pks[0]) ) {  // restricts complex operations but prevents endless loop at m:n
+            Object obj = tempCache.get(getEntityIfExists(type));
+            return obj;
+        }
+
         return createObject(type,pks);
     }
 
@@ -258,6 +272,7 @@ public final class Manager {
 
             for (Field field : entity.getFields()) {
                 setFieldValue(res, t, field);
+                tempCache.put(entity,t);
             }
 
             return t;
@@ -291,7 +306,7 @@ public final class Manager {
             Object value;
             if(field.isForeign()) {
                 // needs a new select for the foreign object here!!!
-                value = get(field.getFieldType(), MetaData.toFieldType(field,res.getObject(field.getColumnName())));
+                value = getObject(field.getFieldType(), MetaData.toFieldType(field,res.getObject(field.getColumnName())));
                 //value = MetaData.toFieldType(field,res.getObject(field.getEntity().getPrimaryFields()[0].getColumnName()));
             } else if (field.isMtoN()) {
                 // hast to be handled extra - should not be settable here
@@ -330,7 +345,9 @@ public final class Manager {
         List<Object> list = new ArrayList<>();
 
         while (res.next()) {
-            list.add(get(entity.getEntityClass(),res.getObject(1)));
+            Object obj = getObject(entity.getEntityClass(),res.getObject(1));
+            tempCache.put(entity, obj);
+            list.add(obj);
         }
         return list;
     }

@@ -34,12 +34,12 @@ public class Course {
     @ForeignKey(table = "t_teacher", column = "id")
     private Teacher teacher;
 
-//    /**
-//     * Database column for m:n entries for students attending the course.
-//     */
-//    @Column
-//    @MtoN(table = "t_student_course", correspondingClass = Student.class)
-//    private List<Student> students; // do not init with = new Arraylist() here!
+    /**
+     * Database column for m:n entries for students attending the course.
+     */
+    @Column
+    @MtoN(table = "t_student_course", correspondingClass = Student.class)
+    private List<Student> students; // do not init with = new Arraylist() here!
 
     /**
      * Empty constructor for course class.
