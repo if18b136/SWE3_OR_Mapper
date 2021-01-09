@@ -4,10 +4,7 @@ import Database.DatabaseConnection;
 import Entities.Course;
 import ORM.Base.Entity;
 import ORM.Base.Field;
-import ORM.Queries.CreateTableQuery;
-import ORM.Queries.InsertQuery;
-import ORM.Queries.Query;
-import ORM.Queries.SelectQuery;
+import ORM.Queries.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -64,8 +61,6 @@ public final class Manager {
      */
     private Manager() {}
 
-
-
     /**
      * Searches for already created class entity.
      * If nothing found, creates new entry in Entities hashMap.
@@ -89,22 +84,32 @@ public final class Manager {
      *
      * @param object    Cached entity object.
      */
-   private static void insertCache (Object object) {
+   private static void insertCache(Object object) {
        if(caching) {
            if(!objectCache.containsKey(object.getClass())) {
                objectCache.put(object.getClass(),new Cache());
            }
            objectCache.get(object.getClass()).setEntry(getEntity(object).getPrimaryFields()[0].getValue(object),object);
+           managerLogger.info("Added Object of table " + getEntity(object).getTableName() + "to cache.");
+       }
+   }
+
+   private static void removeFromCache(Object object) {
+       if(caching && objectCache.containsKey(object.getClass())) {
+           objectCache.get(object.getClass()).deleteEntry(getEntity(object).getPrimaryFields()[0].getValue(object));
+           managerLogger.info("Removed Object of table " + getEntity(object).getTableName() + "to cache.");
        }
    }
 
    public static void enableCaching(Boolean bool) {
        caching = bool;
+       managerLogger.info(caching ? "Caching enabled" : "Caching disabled");
    }
 
    public static void depleteCache() {
        entitiesCache.clear();
        objectCache.clear();
+       managerLogger.info("Cache depleted.");
    }
 
     /**
@@ -527,5 +532,17 @@ public final class Manager {
             throw new IllegalArgumentException("Wrong type for m:n query: " + object.toString() + " --- " + object.getClass() );
         }
         return list;
+    }
+
+    public static void delete(Object object) {
+        try {
+            DeleteQuery delete = new DeleteQuery();
+            delete.buildQuery(object, getEntity(object));
+            managerLogger.info(delete.getQuery());
+            delete.getStmt().execute();
+            removeFromCache(object);
+        } catch (SQLException sql) {
+            managerLogger.error(sql);
+        }
     }
 }

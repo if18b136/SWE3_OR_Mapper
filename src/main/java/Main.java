@@ -82,6 +82,8 @@ public class Main {
             List<String> list = stdGet.getBookedCourses();
             list.forEach(System.out::println);
 
+            Manager.delete(english);
+
         } catch (Exception e) {
             mainLogger.error(e);
             e.printStackTrace();
