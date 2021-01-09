@@ -68,7 +68,6 @@ public class CreateTableQuery implements QueryLanguage {
                         } else {
                             createTable.append(MetaData.parseType(field.getField().getType().getName(),((Column) annotation).length()));
                         }
-
                         if(((Column) annotation).primary()) { createTable.append(space).append(primary); }
                         if (((Column) annotation).autoIncrement()) { createTable.append(space).append(autoInc); }
                         if (((Column) annotation).unique()) { createTable.append(space).append(unique); }
@@ -81,6 +80,12 @@ public class CreateTableQuery implements QueryLanguage {
                     createTable.append(field.getColumnName()).append(brClosed);
                     createTable.append(space).append(reference).append(space).append(MetaData.getForeignTable(field.getField()));
                     createTable.append(brOpen).append(MetaData.getForeignColumn(field.getField())).append(brClosed);
+
+                    if(field.isNullable() && !field.isPrimary()) {    //if nullable non-pk let the db set fk values to null
+                        createTable.append(space).append(odsn).append(space).append(ouc);
+                    } else {    // if not nullable the entry should not be deleted - entry that reference the fk entity need to be deleted first.
+                        createTable.append(space).append(odr).append(space).append(ouc);
+                    }
                 }
             }
         }
@@ -128,6 +133,12 @@ public class CreateTableQuery implements QueryLanguage {
                         fk.append(entity.getTableName()).append("_").append(field.getColumnName()).append(brClosed);   // appending the new colName
                         fk.append(space).append(reference).append(space).append(entity.getTableName());                // reference the entity table name
                         fk.append(brOpen).append(field.getColumnName()).append(brClosed);
+                        // append update and delete conditions
+                        if(field.isNullable()) {    //if nullable let the db set fk values to null
+                            fk.append(space).append(odsn).append(space).append(ouc);
+                        } else {    // if not nullable delete the whole entry - is not needed anymore if one of the m:n instances is deleted.
+                            fk.append(space).append(odc).append(space).append(ouc);
+                        }
                     }
                     first = false;
                 }

@@ -3,6 +3,7 @@ package ORM.Queries;
 /**
  * Helper interface for various sql query language.
  * Implemented in all query classes to circumvent the need to append strings
+ * It simply looks better than having to manually write strings for every sql command.
  */
 public interface QueryLanguage {
     /**
@@ -101,4 +102,12 @@ public interface QueryLanguage {
      * ON sql string
      */
     String on = "ON";
+    String update = "UPDATE";
+    String delete = "DELETE";
+    String cascade = "CASCADE";
+    String setNull = "SET NULL";
+    String odsn = "ON DELETE SET NULL";
+    String odc = "ON DELETE CASCADE";
+    String ouc = "ON UPDATE CASCADE";
+    String odr = "ON DELETE RESTRICT";
 }

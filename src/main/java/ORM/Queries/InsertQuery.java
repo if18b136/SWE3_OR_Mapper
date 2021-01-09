@@ -143,6 +143,7 @@ public class InsertQuery implements QueryLanguage {
             StringBuilder insertQuery = new StringBuilder();
             insertQuery.append(operation).append(space);                    // "INSERT into" + " "
             Entity ent = Manager.getEntity(objects[0].getClass());
+
             insertQuery.append(ent.getManyFields()[0].getForeignTable()).append(space);        // "Table Name" + " "
             StringBuilder columns = new StringBuilder();
             StringBuilder columnValues = new StringBuilder();

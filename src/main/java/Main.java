@@ -1,8 +1,10 @@
 import Database.DatabaseConnection;
 
 import Entities.*;
+import ORM.Base.Entity;
 import ORM.Manager;
 
+import ORM.Queries.InsertQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,16 +32,12 @@ public class Main {
     public static void main(String[] args) {
         try{
             Connection db = DatabaseConnection.getInstance().getConnection();   //DB Connection Test
-            PreparedStatement dropTable = db.prepareStatement("DROP TABLE if exists t_student_course");
-            dropTable.execute();
-            dropTable = db.prepareStatement("DROP TABLE if exists t_course");
-            dropTable.execute();
-            dropTable = db.prepareStatement("DROP TABLE if exists t_teacher");
-            dropTable.execute();
-            dropTable = db.prepareStatement("DROP TABLE if exists t_student");
-            dropTable.execute();
-            dropTable = db.prepareStatement("DROP TABLE if exists t_person");
-            dropTable.execute();
+            db.prepareStatement("DROP TABLE if exists t_test").execute();
+            db.prepareStatement("DROP TABLE if exists t_student_course").execute();
+            db.prepareStatement("DROP TABLE if exists t_course").execute();
+            db.prepareStatement("DROP TABLE if exists t_teacher").execute();
+            db.prepareStatement("DROP TABLE if exists t_student").execute();
+            db.prepareStatement("DROP TABLE if exists t_person").execute();
 
             Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
             Manager.createTable(timmy);
@@ -51,7 +49,7 @@ public class Main {
             //TODO superclass instance needs to be created if not exists - but how to determine when it needs to be created and when not?
             //Not necessary - just describe it in show program
 
-            Teacher thomasTeacher = new Teacher(1);
+            Teacher thomasTeacher = new Teacher(1,2536.0);
             Manager.createTable(thomasTeacher);
             Manager.save(thomasTeacher);
 

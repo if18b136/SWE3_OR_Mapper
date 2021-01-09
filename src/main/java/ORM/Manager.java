@@ -27,6 +27,10 @@ public final class Manager {
      */
     final static Logger managerLogger = LogManager.getLogger("Manager");
     /**
+     * Singleton instance of the Manager class for locking functionality.
+     */
+    private static Manager manager;
+    /**
      * Private boolean for cache enabling and disabling.
      */
     private static Boolean caching = false;
@@ -38,9 +42,9 @@ public final class Manager {
      * HashMap with caches for each custom entity class.
      */
     private static final HashMap<Class<?>, Cache> objectCache = new HashMap<>();
-    private static final HashMap<Class<?>, Cache> tempObjectCache = new HashMap<>();
-
+    private static final HashMap<Entity,Object> tempCache = new HashMap<>();
     private static ArrayList<Entity> tableCache = new ArrayList<>();
+
     /**
      * Database connection as static variable to make database calls faster.
      */
@@ -59,6 +63,8 @@ public final class Manager {
      * Empty private constructor because of static non-instantiable class.
      */
     private Manager() {}
+
+
 
     /**
      * Searches for already created class entity.
@@ -122,7 +128,7 @@ public final class Manager {
      * @return  True if exists, else false.
      * @throws SQLException if anything went wrong with the database connection.
      */
-    private static boolean tableExists(String tableName) throws SQLException {
+    public static boolean tableExists(String tableName) throws SQLException {
         PreparedStatement table = db.prepareStatement("show tables like ?;");
         table.setString(1,tableName);
         ResultSet res = table.executeQuery();
@@ -146,8 +152,6 @@ public final class Manager {
        return (T) obj;
     }
 
-
-    private static final HashMap<Entity,Object> tempCache = new HashMap<>();
 
     /**
      * Either finds the object in one of the caches or calls the create function below the make a new one.

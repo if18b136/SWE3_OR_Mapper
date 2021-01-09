@@ -15,13 +15,20 @@ public class Teacher extends Person{
     @ForeignKey(table = "t_person", column = "id")
     private int id;
 
+    @Column
+    private double salary;
+
     @Column(ignore = true)
     private List<Course> teachingCourses;
 
     public Teacher() {}
-    public Teacher(int id) { this.id = id; }
-    public Teacher(int id, List<Course> teachingCourses) {
+    public Teacher(int id, double salary) {
         this.id = id;
+        this.salary = salary;
+    }
+    public Teacher(int id, double salary, List<Course> teachingCourses) {
+        this.id = id;
+        this.salary = salary;
         this.teachingCourses = teachingCourses;
     }
 

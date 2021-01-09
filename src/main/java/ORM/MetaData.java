@@ -264,6 +264,8 @@ public final class MetaData {
 
     /**
      * Type parser for different java types to Database types.
+     * Used in order to convert different java values types into strings of mysql db-conform types.
+     * Currently only supports a small amount of types and would need to be expanded.
      *
      * @param type      Java type as string.
      * @param length    Optional length if set in custom class.
@@ -274,7 +276,7 @@ public final class MetaData {
             return switch (type) {
                 case "int" -> "int";
                 case "java.lang.String" -> "varchar(" + length + ")";
-                case "java.lang.Double" -> "double";
+                case "java.lang.Double", "double" -> "double";
                 case "java.time.LocalDate" -> "date";
                 default -> throw new Exception("Exception while parsing type to dB type - type not recognized. " + type);
             };
