@@ -21,8 +21,10 @@ public class Cache {
 
     /**
      * creates the cache hashMap.
+     * Was set to public from protected in order to be able to write unit tests.
+     * TODO get protected version working with unit tests.
      */
-    protected Cache () {
+    public Cache() {
         this.cache = new HashMap<>();
     }
 
@@ -31,7 +33,7 @@ public class Cache {
      * @param pk    the key which will be searched for in the cache hashMap.
      * @return      value for primary key input if exists.
      */
-    public Object getEntry (Object pk) {
+    public Object getEntry(Object pk) {
         Object object = this.cache.get(pk);
         if(object != null) {
             cacheLogger.info(object.toString() + "Object is cached - retrieved from objectCache, cached PK: " + pk.toString());
@@ -44,7 +46,7 @@ public class Cache {
      * @param pk    the unique key, for which the entry will be searchable.
      * @param value the value, which will be stored for the unique key.
      */
-    public void setEntry (Object pk, Object value) {
+    public void setEntry(Object pk, Object value) {
         this.cache.put(pk,value);
     }
 
@@ -53,7 +55,7 @@ public class Cache {
      * @param pk    the key Object for which will be searched in the cache hashMap.
      * @return      true, if cache contains certain key, else false.
      */
-    public boolean contains (Object pk) {
+    public boolean contains(Object pk) {
         return cache.containsKey(pk);
     }
 
@@ -61,7 +63,8 @@ public class Cache {
      * removes key-value pair from cache hasMap if existing.
      * @param pk    the key to determine which kv-pair will be deleted.
      */
-    public void deleteEntry (Object pk) {
+    public void deleteEntry(Object pk) {
         cache.remove(pk);
     }
+
 }

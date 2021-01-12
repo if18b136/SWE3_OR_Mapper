@@ -1,7 +1,6 @@
 package Entities;
 
 import ORM.Annotations.Column;
-import ORM.Annotations.ForeignKey;
 import ORM.Annotations.Table;
 
 @Table(name = "t_Test")
@@ -14,6 +13,7 @@ public class Testing {
 
     @Column(length = 35)
     private String text35;
+
 
     public Testing(int id, String ignored, String text35) {
         this.id = id;

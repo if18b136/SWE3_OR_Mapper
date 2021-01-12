@@ -94,6 +94,11 @@ public final class Manager {
        }
    }
 
+    /**
+     * Removes a object from the cache by it's primary key if caching is enabled and the object exists within the cache.
+     *
+     * @param object    Object, that will be deleted from cache.
+     */
    private static void removeFromCache(Object object) {
        if(caching && objectCache.containsKey(object.getClass())) {
            objectCache.get(object.getClass()).deleteEntry(getEntity(object).getPrimaryFields()[0].getValue(object));
@@ -101,11 +106,19 @@ public final class Manager {
        }
    }
 
+    /**
+     * Enables the user to turn object caching on/off.
+     *
+     * @param bool
+     */
    public static void enableCaching(Boolean bool) {
        caching = bool;
        managerLogger.info(caching ? "Caching enabled" : "Caching disabled");
    }
 
+    /**
+     * Empties entities and object cache.
+     */
    public static void depleteCache() {
        entitiesCache.clear();
        objectCache.clear();
@@ -176,7 +189,6 @@ public final class Manager {
             Object obj = tempCache.get(getEntityIfExists(type));
             return obj;
         }
-
         return createObject(type,pks);
     }
 
@@ -333,7 +345,17 @@ public final class Manager {
         }
     }
 
-    // super simple and not generic - only supports basic case atm.
+    /**
+     * Additional inner function for m:n handling.
+     * Creates a select query based on given input arguments and returns list of found objects in database with specified primary keys.
+     * Raised the need of the tempCache field in order to prevent recursive calls of object references in m:n relation.
+     *
+     * @param entity    The Entity object of the requested objects for selectQuery.
+     * @param field     The ORM.Base Field which holds needed information for selectQuery.
+     * @param pks       The specified primary keys for selectQuery conditions.
+     * @return          List of objects of found db entries with specified parameters.
+     * @throws SQLException if anything failed while receiving the db objects.
+     */
     private static List<Object> getMN(Entity entity, Field field, Object... pks) throws SQLException {
         SelectQuery select = new SelectQuery();
         select.setEntity(entity);
@@ -430,8 +452,9 @@ public final class Manager {
     }
 
     /**
-     * Insert query.
-     * Inserts a new object into the database
+     * Inserts a new object into the database.
+     * Creates a insert Query from the given object.
+     * Also handles m:n relations if a List of another custom object is found.
      *
      * @param object    the object of which it's data will be inserted into the database.
      */
@@ -466,8 +489,8 @@ public final class Manager {
     }
 
     /**
-     * Upsert query.
      * Inserts a new object into the database or updates a database entry if already in database.
+     * Also handles m:n relations if a List of another custom object is found.
      *
      * @param object   the object of which it's data will be upserted in the database.
      */
@@ -485,8 +508,13 @@ public final class Manager {
                 for (Field field : entity.getManyFields()) {
                     Class<?> corrClass = MetaData.getManyClass(field.getField());
                     if(corrClass != null) {
-                        if (tableExists(MetaData.getAnnotationTableName(corrClass))) {
-                            managerLogger.info(insertQuery.buildManyQuery(object, field.getEntity()), getEntity(MetaData.getManyClass(field.getField())));
+                        Object values = field.getValue(object);
+                        if (tableExists(MetaData.getAnnotationTableName(corrClass)) && values != null) {
+                            // cast the m:n entries to an array list for db queries.
+                            List<Object> list = mnListing(values);
+                            for (Object obj : list) {
+                                managerLogger.info(insertQuery.buildManyQuery(object, obj));     // more direct version with inner execute and no perma-stored query.
+                            }
                         }
                     }
                 }
@@ -505,9 +533,7 @@ public final class Manager {
      */
     private static void addSuperClassTargets(SelectQuery select, List<String> targets, Entity entity) {
         if(entity.getSuperClass() != null && !entity.getSuperClass().equals(Object.class)) {
-//            System.out.println("Super class Name: " + entity.getSuperClass().getName());
             Entity superEntity = entitiesCache.get(entity.getSuperClass());
-//            System.out.println("Super entity table name: "  + superEntity.getTableName());
             select.addTables(superEntity.getTableName());
             for (Field field : superEntity.getInternalFields()) {
                 String foreignColumn = superEntity.getTableName()+"."+field.getColumnName();    // easier than trying to get the correct table for each column in the selectQuery Builder
@@ -517,11 +543,18 @@ public final class Manager {
                 addSuperClassTargets(select, targets, entitiesCache.get(entity.getSuperClass()));
             }
         }
-//        else {
-//            System.out.println("Base entity in addSuperClassTargets");
-//        }
+
     }
 
+    /**
+     * Helper function for m:n save/update.
+     * Creates an arraylist out of the given object for insertQuery.
+     * This also restricts the usage of m:n relations in custom objects to ArrayLists.
+     *
+     * @param object    Given object(s) a list will be created from.
+     * @return          The created list.
+     * @throws IllegalArgumentException if wrong type found.
+     */
     private static List<Object> mnListing(Object object) throws IllegalArgumentException {
         List<Object> list;
         if (object.getClass().isArray()) {
@@ -534,6 +567,12 @@ public final class Manager {
         return list;
     }
 
+    /**
+     * Deletes a specified custom object from the database.
+     * Removes object from objectCache if caching is enabled.
+     *
+     * @param object    The object that will be deleted from the database.
+     */
     public static void delete(Object object) {
         try {
             DeleteQuery delete = new DeleteQuery();

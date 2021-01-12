@@ -1,28 +1,23 @@
 import Database.DatabaseConnection;
-import Entities.Course;
-import Entities.Person;
-import Entities.Teacher;
-import Entities.Testing;
+import Entities.*;
 import ORM.Base.Entity;
 import ORM.Base.Field;
 import ORM.Manager;
+import ORM.MetaData;
 import ORM.Queries.InsertQuery;
 import ORM.Queries.SelectQuery;
+
 import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
- * Old Unit test class.
- * will be split up later.
+ * Unit Tests with categorized functionality checks.
  */
-public class UnitTests {
+public class DatabaseTests {
 
     static Connection db;
 
@@ -53,7 +48,6 @@ public class UnitTests {
         Manager.enableCaching(false);
     }
 
-//-------------------------[Database Tests]-------------------------//
     /**
      * testing if a database connection can be established.
      *
@@ -109,66 +103,5 @@ public class UnitTests {
         Assertions.assertNotNull(getTimmy);
         Assertions.assertEquals(timmy.getFirstName(),getTimmy.getFirstName());
     }
-
-
-    //-------------------------[Entity Tests]-------------------------//
-
-    @Test
-    public void getEntityTest() {
-        Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
-        Entity timmyEntity = Manager.getEntity(timmy);
-        Assertions.assertNotNull(timmyEntity);
-        Assertions.assertEquals(timmyEntity.getEntityClass(),Person.class);
-    }
-
-    @Test
-    public void entityFieldTest() {
-        Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));     // Person Class Test
-        Entity timmyEntity = Manager.getEntity(timmy);
-        Assertions.assertNotNull(timmyEntity.getFields());
-        Assertions.assertNotNull(timmyEntity.getPrimaryFields());
-        Assertions.assertNotNull(timmyEntity.getInternalFields());
-        Assertions.assertNotNull(timmyEntity.getExternalFields());
-        Assertions.assertNotNull(timmyEntity.getManyFields());
-    }
-
-
-    //-------------------------[Query Tests]-------------------------//
-
-    @Test
-    public void createTableTest() throws Exception {
-        Testing test = new Testing(15, "this string will be ignored", "35 char text.");
-        Manager.createTable(test);
-        try {
-            Assertions.assertTrue(Manager.tableExists(Manager.getEntity(test).getTableName()));
-        } finally {
-            db.prepareStatement("DROP TABLE if exists t_test").execute();
-        }
-    }
-
-    @Test
-    public void insertQueryTest() {
-        Testing test = new Testing(15, "this string will be ignored", "35 char text.");
-        Entity entity = Manager.getEntity(test);
-        InsertQuery insert = new InsertQuery();
-        insert.buildQuery(test,entity);
-        Assertions.assertEquals("INSERT into t_Test (id, text35) VALUES (?, ?);",insert.getQuery());
-    }
-
-    @Test
-    public void selectQueryTest() {
-        Testing test = new Testing(15, "this string will be ignored", "35 char text.");
-        Entity entity = Manager.getEntity(test);
-
-        SelectQuery select = new SelectQuery();
-        select.setEntity(entity);
-
-        select.addTables(entity.getTableName());
-        select.addTargets("text35");
-        select.addCondition(entity.getPrimaryFields()[0].getColumnName(),15);
-        select.buildQuery();
-        Assertions.assertEquals("SELECT text35  FROM t_Test WHERE t_Test.id = 15;",select.getQuery());
-    }
-
 
 }

@@ -1,15 +1,12 @@
 import Database.DatabaseConnection;
 
 import Entities.*;
-import ORM.Base.Entity;
 import ORM.Manager;
 
-import ORM.Queries.InsertQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.util.List;
 

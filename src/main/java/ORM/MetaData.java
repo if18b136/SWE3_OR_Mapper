@@ -126,6 +126,7 @@ public final class MetaData {
 
     /**
      * Checks a reflection field for the custom nullable annotation.
+     * Also returns false if field is annotated as primary field as these also can not be null.
      *
      * @param field Java reflection field.
      * @return      True or false, depending on if annotation is set.
@@ -133,8 +134,8 @@ public final class MetaData {
     public static boolean isNullable(Field field) {
         Annotation[] annotations = field.getDeclaredAnnotations();
         for (Annotation annotation : annotations) {
-            if(annotation instanceof Column && ((Column) annotation).nullable()) {
-                return true;
+            if (annotation instanceof Column && ((Column) annotation).nullable()) {
+                return !((Column) annotation).primary();
             }
         }
         return false;
@@ -275,6 +276,7 @@ public final class MetaData {
         try {
             return switch (type) {
                 case "int" -> "int";
+                case "java.lang.Long", "long" -> "long";
                 case "java.lang.String" -> "varchar(" + length + ")";
                 case "java.lang.Double", "double" -> "double";
                 case "java.time.LocalDate" -> "date";
