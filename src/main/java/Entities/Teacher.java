@@ -4,6 +4,7 @@ import ORM.Annotations.Column;
 import ORM.Annotations.ForeignKey;
 import ORM.Annotations.Table;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,4 +43,7 @@ public class Teacher extends Person{
     }
 
     public List<Course> getTeachingCourses() { return this.teachingCourses; }
+
+    public double getSalary() { return this.salary; }
+    public void setSalary(Double salary) { this.salary = salary; }
 }

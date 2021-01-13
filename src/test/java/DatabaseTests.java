@@ -59,6 +59,21 @@ public class DatabaseTests {
     }
 
     @Test
+    public void testTest() {
+        Person person = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));
+        Manager.save(person);
+        Teacher teacher = new Teacher(1,2536.0);
+        Manager.save(teacher);
+        Course course = new Course(1,"Mathematics",3.5,teacher);
+        Manager.save(course);
+
+        Course getCourse = Manager.get(Course.class, 1);
+        Teacher getTeacherFromCourse = getCourse.getTeacher();
+        Assertions.assertEquals(getTeacherFromCourse.getSalary(),2536.0);
+        Assertions.assertEquals(getTeacherFromCourse.getFirstName(),"Timmy");
+    }
+
+    @Test
     public void baseClassSaveAndGetTest() {
         Person timmy = new Person(1,"Timmy","Turner", LocalDate.of(1992,5,21));
         Manager.save(timmy);

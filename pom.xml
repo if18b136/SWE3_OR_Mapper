@@ -18,6 +18,29 @@
                     <target>14</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -33,7 +56,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.21</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

@@ -90,7 +90,7 @@ public final class Manager {
                objectCache.put(object.getClass(),new Cache());
            }
            objectCache.get(object.getClass()).setEntry(getEntity(object).getPrimaryFields()[0].getValue(object),object);
-           managerLogger.info("Added Object of table " + getEntity(object).getTableName() + "to cache.");
+           managerLogger.info("Added Object of table " + getEntity(object).getTableName() + " to cache.");
        }
    }
 
@@ -135,7 +135,7 @@ public final class Manager {
        if(entitiesCache.containsKey(type)) {
            return entitiesCache.get(type);
        }
-       managerLogger.info("Search for logged Entity " + type + " unsuccessful - no Entity for that class cached. Null returned.");
+       managerLogger.warn("Search for logged Entity " + type + " unsuccessful - no Entity for that class cached. Null returned.");
        return null;
    }
 
@@ -334,7 +334,12 @@ public final class Manager {
                 Entity ent = field.getEntity();
                 if (tableExists(field.getForeignTable())) {
                     //TODO ent.getManyFields()[0] restricts this call to a single m:n per custom entity
-                    value = getMN(getEntityIfExists(MetaData.getManyClass(field.getField())), field, res.getObject(ent.getPrimaryFields()[0].getColumnName()));
+                    Entity foreignEntity = getEntityIfExists(MetaData.getManyClass(field.getField()));
+                    if(foreignEntity != null) { // look if a corresponding object has already been established as entity - if not ignore input because there will be no value to assign.
+                        value = getMN(foreignEntity, field, res.getObject(ent.getPrimaryFields()[0].getColumnName()));
+                    } else {
+                        value = null;
+                    }
                 } else {
                     value = new ArrayList<>(); // Not perfect - restricts m:n to arraylists
                 }
