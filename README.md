@@ -1,5 +1,6 @@
 # BIF5D1 Softwareentwicklung 3 OR-Mapper
-SWE3 Semester project OR-Mapper.
+SWE3 Semester project OR-Mapper.<br>
+JavaDoc unter [Dokumentation](https://if18b136.github.io/SWE3_OR_Mapper/) einsichtlich.
 
 ## Übersicht
 - Architektur: Code First
